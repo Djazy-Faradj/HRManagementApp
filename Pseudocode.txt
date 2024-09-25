@@ -1,0 +1,68 @@
+Example Department1 (OBJECT):
+	-Teacher1/Dean (Full-time)
+	-Teacher2 (Part-time)
+	-Teacher3 (Full-time)
+	-Teacher4 (Full-time)
+	-Teacher5 (Part-time)
+	-Teacher6 (Full-time)
+	-Staff1
+	-Staff2
+	-Staff3
+	-Staff4
+
+Concrete class Department
+	-Have an id
+	-AssignDean();
+	-If dept is not empty and no dean, throw exception
+
+Abstract class Person (5 shared fields, 1 abstract method to define a person's category[teacher or staff])
+	-Extended with concrete classes:
+		-Concrete class Teacher (2 Instance Variables: specialty & degree)
+			-Concrete class part-time
+				-ComputePayRoll(): (hoursWorked * degreeRate * 2) * 0.76
+			-Concrete class full-time
+				-ComputePayRoll(): (32 * degreeRate * 2) * 0.85
+		-Concrete class Staff (2 Instance Variables: duty & workload)
+				-ComputePayRoll(): (workload * 32 * 2) * 0.75
+		
+		
+degreeRate {
+	{"PhD", 112},
+	{"Master", 82},
+	{"Bachelor", 42},
+}
+
+workload = weekly working hours (!> 40H/week)
+		
+INTERFACE - Payroll
+	-Function ComputePayRoll()
+	
+INTERFACE - Create
+	-Function CreateDept()
+		-Generate ID
+		-Prompt to assign a teacher/dean
+			-Throw exception if incorrect ID
+		-Append to departments text file	
+		
+INTERFACE - Delete
+	-Function DeleteDept()
+		-Incorrect dept. ID will throw exception
+		-Delete deptname txt file
+		-Remove from departments text file
+	
+INTERFACE - Add
+	-Function AddToDept()
+		-Incorrect dept. ID will throw exception
+		-If teacher/staff ID already in dept., throw exception
+		-Append to deptname text file
+	
+INTERFACE - Remove
+	-Function RemoveFromDept()
+		-Incorrect dept. ID will throw exception
+		-If no teacher/staff of the ID in dept., throw exception
+		-Remove from deptname text file
+	
+INTERFACE - Lists
+	-Lists either the departments or teacher/staff in alphabetical order (Use of sorting algorithm)
+	
+At start, assign dept. to teacher and staff from text file.
