@@ -72,11 +72,12 @@ struct Staff : public Person { // Staff class declaration and inherits from Pers
     private:
         string duty;
         int workload;
-    public:
+
         void setCategory()
         {
             category = "Staff";
         }
+    public:
 
         // SETTERS
         void setWorkload(int w)
@@ -123,11 +124,12 @@ struct Teacher : public Person { // Teacher class declaration and inherits from 
         string type;
         string speciality;
         string degree;
-    public:
+
         void setCategory()
         {
             category = "Teacher";
         }
+    public:
 
         // SETTERS 
         void setHoursWorked(int i)
