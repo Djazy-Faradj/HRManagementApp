@@ -30,14 +30,8 @@ struct Person { // Person class declaration
         static int partTimeCount;
 
         // SETTERS
-        void setAge(int a)
-        {
-            age = a;
-        }
-        void setName(string n)
-        {
-            name = n;
-        }
+        void setAge(int a) { age = a; }
+        void setName(string n) { name = n; }
         void setID(int i)
         {
             id = i;
@@ -45,22 +39,10 @@ struct Person { // Person class declaration
         }
 
         // GETTERS
-        int getAge() const
-        {
-            return age;
-        }
-        string getName() const
-        {
-            return name;
-        }
-        string getCategory() const
-        {
-            return category;
-        }
-        int getID() const
-        {
-            return id;
-        }
+        int getAge() const { return age; }
+        string getName() const { return name; }
+        string getCategory() const { return category; }
+        int getID() const { return id; }
 };
 int Person::nextID = 1;
 int Person::staffCount = 0;
@@ -72,31 +54,16 @@ struct Staff : public Person { // Staff class declaration and inherits from Pers
         string duty;
         int workload;
 
-        void setCategory()
-        {
-            category = "Staff";
-        }
+        void setCategory() { category = "Staff"; }
     public:
 
         // SETTERS
-        void setWorkload(int w)
-        {
-            workload = w;
-        }
-        void setDuty(string d)
-        {
-            duty = d;
-        }
+        void setWorkload(int w) { workload = w; }
+        void setDuty(string d) { duty = d; }
 
         // GETTERS
-        int getWorkload() const
-        {
-            return workload;
-        }
-        string getDuty() const
-        {
-            return duty;
-        }
+        int getWorkload() const { return workload; }
+        string getDuty() const { return duty; }
 
         Staff(string name, int age, string duty, int workload = 0)   // Staff class constructor
         {
@@ -111,10 +78,7 @@ struct Staff : public Person { // Staff class declaration and inherits from Pers
             staffCount++;
         }
 
-        float ComputePayRoll() const
-        {
-            return ((workload * 32 * 2) * 0.75f);
-        }
+        float ComputePayRoll() const { return ((workload * 32 * 2) * 0.75f); }
 };
 struct Teacher : public Person { // Teacher class declaration and inherits from Person 
     protected:
@@ -123,54 +87,24 @@ struct Teacher : public Person { // Teacher class declaration and inherits from 
         string speciality;
         string degree;
 
-        void setCategory()
-        {
-            category = "Teacher";
-        }
+        void setCategory() { category = "Teacher"; }
     public:
 
         // SETTERS 
-        void setHoursWorked(int i)
-        {
-            hoursWorked = i;
-        }
-        void setType(string t)
-        {
-            type = t; // part-time or full-time
-        }
-        void setSpeciality(string s)
-        {
-            speciality = s;  // i.e. Computer Science, Math, etc.
-        }
-        void setDegree(string s)
-        {
-            degree = s;
-        }
+        void setHoursWorked(int i) { hoursWorked = i; }
+        void setType(string t) { type = t; }// part-time or full-time
+        void setSpeciality(string s) { speciality = s; } // i.e. Computer Science, Math, etc.
+        void setDegree(string s) { degree = s; }
 
         // GETTERS
-        int getHoursWorked() const
-        {
-            return hoursWorked;
-        }
-        string getType() const
-        {
-            return type;
-        }
-        string getSpeciality() const
-        {
-            return speciality;
-        }
-        string getDegree() const
-        {
-            return degree;
-        }
+        int getHoursWorked() const { return hoursWorked; }
+        string getType() const { return type; }
+        string getSpeciality() const { return speciality; }
+        string getDegree() const { return degree; }
 };
 struct PartTime : public Teacher { // PartTime class declaration and inherits from Teacher 
     public:
-        float ComputePayRoll() const
-        {
-            return ((hoursWorked * degreeRateMap.at(degree) * 2) * 0.76f);
-        }
+        float ComputePayRoll() const { return ((hoursWorked * degreeRateMap.at(degree) * 2) * 0.76f); }
 
         PartTime(string name, int age, string speciality, string degree, int hoursWorked = 0)   // PartTime class constructor
         {
@@ -191,10 +125,7 @@ struct PartTime : public Teacher { // PartTime class declaration and inherits fr
 };
 struct FullTime : public Teacher { // FullTime class declaration and inherits from Teacher 
     public:
-        float ComputePayRoll() const
-        {
-            return ((hoursWorked * degreeRateMap.at(degree) * 2) * 0.85f);
-        }
+        float ComputePayRoll() const { return ((hoursWorked * degreeRateMap.at(degree) * 2) * 0.85f); }
 
         FullTime(string name, int age, string speciality, string degree)   // PartTime class constructor
         {
@@ -230,41 +161,20 @@ struct Department{ // Department class declaration
             id = i;
             nextID++; // Everytime an ID is assigned, change the next id for the next person to be instanciated
         }
-        void setName(string n)
-        {
-            name = n;
-        }
+        void setName(string n) { name = n; }
         void setDean(Teacher t)
         {
             dean = t;
             teacherList.emplace(teacherList.begin(), t);  // The dean is ALWAYS the first element in the department teacher list
         }
-        void setTeacherList(vector<Teacher> tl)
-        {
-            teacherList = tl;
-        }
-        void setStaffList(vector<Staff> sl)
-        {
-            staffList = sl;
-        }
+        void setTeacherList(vector<Teacher> tl) { teacherList = tl; }
+        void setStaffList(vector<Staff> sl) { staffList = sl; }
 
         // GETTERS
-        int getID() const
-        {
-            return id;
-        }
-        string getName() const
-        {
-            return name;
-        }
-        Teacher getDean() const
-        {
-            return dean;
-        }
-        vector<Teacher> getTeacherList() const
-        {
-            return teacherList;
-        }
+        int getID() const { return id; }
+        string getName() const { return name; }
+        Teacher getDean() const { return dean; }
+        vector<Teacher> getTeacherList() const { return teacherList; }
 
         string addTeacher(Teacher t) // First check if teacher is already in dept. if not, add and return success message, if yes, return error message
         {
