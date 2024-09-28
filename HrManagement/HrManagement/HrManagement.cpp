@@ -230,7 +230,7 @@ struct Department{ // Department class declaration
 
 };
 
-int getPersonnelAgeAverage()
+int getPersonnelAvgAge()
 {   
     int sum = 0;
     if (Person::personnelAgeVector.size() == 0) return 0; // Avoid to divide by 0 if age vector is empty
@@ -240,40 +240,7 @@ int getPersonnelAgeAverage()
 
 int main()
 {
-    // Testing the classes
-    PartTime t1("Gerald", 10, "English", "Bachelor", 15);
-    cout << "T1 Name: " << t1.getName() << endl;
-    cout << "T1 Age: " << t1.getAge() << endl;
-    cout << "T1 Category: " << t1.getCategory() << endl;
-    cout << "T1 ID: " << t1.getID() << endl;
-    cout << "T1 Speciality: " << t1.getSpeciality() << endl;
-    cout << "T1 Degree: " << t1.getDegree() << endl;
-    cout << "T1 ComputePayRoll(): " << t1.ComputePayRoll() << endl;
-
-    FullTime t2("Thomas", 30, "Computer Science", "PhD");
-    cout << endl << endl << "T2 Name: " << t2.getName() << endl;
-    cout << "T2 Age: " << t2.getAge() << endl;
-    cout << "T2 Category: " << t2.getCategory() << endl;
-    cout << "T2 ID: " << t2.getID() << endl;
-    cout << "T2 Speciality: " << t2.getSpeciality() << endl;
-    cout << "T2 Degree: " << t2.getDegree() << endl;
-    cout << "T2 ComputePayRoll(): " << t2.ComputePayRoll() << endl;
-
-    Staff s1("Michael", 20, "Floor cleaning", 23);
-    cout << endl << endl << "S1 Name: " << s1.getName() << endl;
-    cout << "S1 Age: " << s1.getAge() << endl;
-    cout << "S1 Category: " << s1.getCategory() << endl;
-    cout << "S1 ID: " << s1.getID() << endl;
-    cout << "S1 Duty: " << s1.getDuty() << endl;
-    cout << "S1 Workload: " << s1.getWorkload() << endl;
-    cout << "S1 ComputePayRoll(): " << s1.ComputePayRoll() << endl;
-
-    cout << endl << endl;
-    cout << "Total part-time count: " << Person::partTimeCount << endl;
-    cout << "Total full-time count: " << Person::fullTimeCount << endl;
-    cout << "Total teacher count: " << Person::partTimeCount + Person::fullTimeCount << endl;
-    cout << "Total staff count: " << Person::staffCount << endl;
-    cout << "Personnel age average: " << getPersonnelAgeAverage() << endl;
+    
 
     return 0;
 }
