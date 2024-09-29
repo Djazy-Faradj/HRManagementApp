@@ -2,29 +2,47 @@
 //
 
 #include <iostream>
+#include <string>
 #include <vector>
 #include <unordered_map>
 
 using namespace std;
+
+bool run = true;
 
 const unordered_map<string, int> degreeRateMap = { // Create an unordered map linking each degree with their respective rates
     {"PhD", 112},
     {"Master", 82},
     {"Bachelor", 42}  
 }; 
+enum MENU_STATE {
+    MAIN_MENU,
+    DEPARTMENT_CREATE,
+    DEPARTMENT_DELETE,
+    DEPARTMENT_MODIFY,
+    PERSON_CREATE,
+    PERSON_DELETE,
+    PERSON_MODIFY,
+    SETTINGS,
+    CLOSE
+
+};
+MENU_STATE menuState;
 
 struct Person { // Person class declaration
     private:
-        int id;
         int age;
         string name;
     protected:
+        int id;
         static int nextID;
         string category;
 
         virtual void SetCategory() { category = "Person"; }
     public:
         static vector<int> personnelAgeVector;
+        static vector<int> teacherInstancesIDVector;
+        static vector<int> staffInstancesIDVector;
         static int staffCount;
         static int fullTimeCount;
         static int partTimeCount;
@@ -49,6 +67,8 @@ int Person::staffCount = 0;
 int Person::partTimeCount = 0;
 int Person::fullTimeCount = 0;
 vector<int> Person::personnelAgeVector = {};
+vector<int> Person::teacherInstancesIDVector = {};
+vector<int> Person::staffInstancesIDVector = {};
 struct Staff : public Person { // Staff class declaration and inherits from Person 
     private:
         string duty;
@@ -142,7 +162,11 @@ struct FullTime : public Teacher { // FullTime class declaration and inherits fr
             personnelAgeVector.push_back(age);
             fullTimeCount++;
         }
+
 };
+
+vector<Teacher> teacherInstancesVector = {};
+vector<Staff> staffInstancesVector = {};
 
 struct Department{ // Department class declaration
     private:
@@ -212,6 +236,7 @@ struct Department{ // Department class declaration
 
 };
 int Department::nextID = 1;
+vector<Department> departmentInstancesVector = {};
 
 int getPersonnelAvgAge()
 {   
@@ -221,25 +246,493 @@ int getPersonnelAvgAge()
     return (sum / Person::personnelAgeVector.size()); // Gets average and returns it as a rounded up int
 }
 
+void drawAppTitle()
+{
+    cout << "*************** HR MANAGEMENT ***************";
+}
+
 int Init() // Get called at the start of the program, will either create a data file or read it and load the state
 {
+    // Read from data file
+    // load state
+
     return 0;
+}
+
+void mainMenu()
+{
+    system("CLS");
+    drawAppTitle();
+    int choice;
+    cout << "\n\n--Main Menu--\n" << endl;
+    // Menu options
+    cout << "1--Create Department          4--Create Person" << endl;
+    cout << "2--Delete Department          5--Delete Person" << endl;
+    cout << "3--Modify Department          6--Modify Person" << endl;
+    cout << "\n7--Settings" << endl;
+    cout << "8--Exit" << endl;
+    cout << endl << "*********************************************";
+    cout << endl << endl;
+    cout << "Please type your desired action: ";
+    cin >> choice;
+
+    switch(choice)
+    {
+        case 1:
+            menuState = DEPARTMENT_CREATE;
+            break;
+        case 2:
+            menuState = DEPARTMENT_DELETE;
+            break;
+        case 3:
+            menuState = DEPARTMENT_MODIFY;
+            break;
+        case 4:
+            menuState = PERSON_CREATE;
+            break;
+        case 5:
+            menuState = PERSON_DELETE;
+            break;
+        case 6:
+            menuState = PERSON_MODIFY;
+            break;
+        case 7:
+            menuState = SETTINGS;
+            break;
+        case 8:
+            menuState = CLOSE;
+            break;
+        default:
+            break; // Repeats menu as no proper key was typed
+
+    }
+}
+
+void createDepartment()
+{
+    system("CLS");
+    drawAppTitle();
+    bool departmentCreated = false;
+
+    string name;
+    int goToPersonCreatePrompt;
+    int teacherID;
+    cout << "\n\n--Create Department--\n" << endl;
+    cin.get();
+    // createDepartment steps
+    cout << "Please type a name for the new department";
+    cout << endl << "\n*********************************************";
+    cout << endl << endl;
+    cout << "Department name: ";
+    getline(cin, name);
+    cout << endl;
+    if (teacherInstancesVector.size() == 0)
+    {
+        cout << "There are currently no existing teacher in the college.\nPlease create a teacher first to assign as dean. \n\nType 1 to go to Person creation page: ";
+        cin >> goToPersonCreatePrompt;
+
+        switch (goToPersonCreatePrompt)
+        {
+            case 1:
+                menuState = PERSON_CREATE;
+                break;
+            default:
+                break;
+        }
+    }
+    else
+    {
+        while (!departmentCreated)
+        {
+            cout << "Please assign a teacher to be this department's dean (Enter teacher ID): ";
+            cin >> teacherID;
+            for (Teacher t : teacherInstancesVector)
+            {
+                if (t.getID() == teacherID)
+                {
+                    Department d(name, t);
+                    departmentInstancesVector.push_back(d);
+                    departmentCreated = true;
+                }
+            }
+            if (!departmentCreated) cout << "ID provided does not match any existing teacher.\n";
+        }
+        cout << "Department has been created successfully. ";
+        system("pause");
+        menuState = MAIN_MENU;
+    }
+}
+
+void deleteDepartment()
+{
+    system("CLS");
+    drawAppTitle();
+    int choice;
+    cout << "\n\n--Delete Department--" << endl;
+    // deleteDepartment options
+    cout << endl << "*********************************************";
+    cout << endl << endl;
+    cout << "Please type your desired action: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+    case 1:
+        menuState = DEPARTMENT_CREATE;
+        break;
+    case 2:
+        menuState = DEPARTMENT_DELETE;
+        break;
+    case 3:
+        menuState = DEPARTMENT_MODIFY;
+        break;
+    case 4:
+        menuState = PERSON_CREATE;
+        break;
+    case 5:
+        menuState = PERSON_DELETE;
+        break;
+    case 6:
+        menuState = PERSON_MODIFY;
+        break;
+    case 7:
+        menuState = SETTINGS;
+        break;
+    case 8:
+        menuState = CLOSE;
+        break;
+    default:
+        break; // Repeats menu as no proper key was typed
+
+    }
+}
+
+void modifyDepartment()
+{
+    system("CLS");
+    drawAppTitle();
+    int choice;
+    cout << "\n\n--Modify Department--" << endl;
+    // modifyDepartment options
+    cout << endl << "*********************************************";
+    cout << endl << endl;
+    cout << "Please type your desired action: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+    case 1:
+        menuState = DEPARTMENT_CREATE;
+        break;
+    case 2:
+        menuState = DEPARTMENT_DELETE;
+        break;
+    case 3:
+        menuState = DEPARTMENT_MODIFY;
+        break;
+    case 4:
+        menuState = PERSON_CREATE;
+        break;
+    case 5:
+        menuState = PERSON_DELETE;
+        break;
+    case 6:
+        menuState = PERSON_MODIFY;
+        break;
+    case 7:
+        menuState = SETTINGS;
+        break;
+    case 8:
+        menuState = CLOSE;
+        break;
+    default:
+        break; // Repeats menu as no proper key was typed
+
+    }
+}
+
+void createPerson()
+{
+    system("CLS");
+    drawAppTitle();
+    int categoryChoice;
+    string name;
+    int age;
+    string speciality;
+    int degreeChoice;
+    string degree;
+    int hoursWorked;
+    string duty;
+    int workload;
+    cout << "\n\n--Create Person--\n" << endl;
+    // createPerson options
+    cout << "Please indicate the category of the person.\n";
+    cout << "1--Teacher               2--Staff";
+    cout << endl << "\n*********************************************";
+    cout << endl << endl;
+    cout << "Please indicate your desired category: ";
+    cin >> categoryChoice;
+
+    if (categoryChoice == 1)
+    {
+        system("CLS");
+        drawAppTitle();
+        cout << "\n\n--Create Person-TEACHER--\n" << endl;
+        // createPerson options
+        cout << "Please write the full name of the teacher.";
+        cout << endl << "\n*********************************************";
+        cout << endl << endl;
+        cout << "Name: ";
+        cin.get();
+        getline(cin, name);
+        cout << "\n\nNow please type the teacher's age: ";
+        cin.get();
+        cin >> age;
+        cout << "\n\nNow please type the teacher's speciality (i.e. Math, English, etc.): ";
+        cin.get();
+        getline(cin, speciality);
+        cout << "\n\nNow please indicate the teacher's degree. (Default degree: Bachelor)\n1--Bachelor         2--Master         3--PhD\n\nDegree: ";
+        cin >> degreeChoice;
+        cout << "\n\nNow please type the teacher's weekly work hours (32hrs/week will assign the teacher as full-time): ";
+        cin.get();
+        cin >> hoursWorked;
+
+        switch (degreeChoice)
+        {
+        case 2:
+            degree = "Master";
+            break;
+        case 3: 
+            degree = "PhD";
+            break;
+        default:
+            degree = "Bachelor";
+            break;
+        }
+        if (hoursWorked == 32)
+        {
+            FullTime t(name, age, speciality, degree);
+            teacherInstancesVector.push_back(t);
+        }
+        else
+        {
+            PartTime t(name, age, speciality, degree, hoursWorked);
+            teacherInstancesVector.push_back(t);
+        }
+    }
+    else if (categoryChoice == 2)
+    {
+        system("CLS");
+        drawAppTitle();
+        cout << "\n\n--Create Person-STAFF--\n" << endl;
+        // createPerson options
+        cout << "Please write the full name of the staff person.";
+        cout << endl << "\n*********************************************";
+        cout << endl << endl;
+        cout << "Name: ";
+        cin.get();
+        getline(cin, name);
+        cout << "\n\nNow please type the staff person's age: ";
+        cin.get();
+        cin >> age;
+        cout << "\n\nNow please type the staff person's duty: ";
+        cin.get();
+        getline(cin, duty);
+        cout << "\n\nNow please type the staff person's workload: ";
+        cin.get();
+        cin >> workload;
+
+        Staff s(name, age, duty, workload);
+        staffInstancesVector.push_back(s);
+    }
+    cout << "Person created successfully. ";
+    system("pause");
+    menuState = MAIN_MENU;
+}
+
+void deletePerson()
+{
+    system("CLS");
+    drawAppTitle();
+    int choice;
+    cout << "\n\n--Delete Person--" << endl;
+    // deletePerson options
+    cout << endl << "*********************************************";
+    cout << endl << endl;
+    cout << "Please type your desired action: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+    case 1:
+        menuState = DEPARTMENT_CREATE;
+        break;
+    case 2:
+        menuState = DEPARTMENT_DELETE;
+        break;
+    case 3:
+        menuState = DEPARTMENT_MODIFY;
+        break;
+    case 4:
+        menuState = PERSON_CREATE;
+        break;
+    case 5:
+        menuState = PERSON_DELETE;
+        break;
+    case 6:
+        menuState = PERSON_MODIFY;
+        break;
+    case 7:
+        menuState = SETTINGS;
+        break;
+    case 8:
+        menuState = CLOSE;
+        break;
+    default:
+        break; // Repeats menu as no proper key was typed
+
+    }
+}
+
+void modifyPerson()
+{
+    system("CLS");
+    drawAppTitle();
+    int choice;
+    cout << "\n\n--Modify Person--" << endl;
+    // modifyPerson options
+    cout << endl << "*********************************************";
+    cout << endl << endl;
+    cout << "Please type your desired action: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+    case 1:
+        menuState = DEPARTMENT_CREATE;
+        break;
+    case 2:
+        menuState = DEPARTMENT_DELETE;
+        break;
+    case 3:
+        menuState = DEPARTMENT_MODIFY;
+        break;
+    case 4:
+        menuState = PERSON_CREATE;
+        break;
+    case 5:
+        menuState = PERSON_DELETE;
+        break;
+    case 6:
+        menuState = PERSON_MODIFY;
+        break;
+    case 7:
+        menuState = SETTINGS;
+        break;
+    case 8:
+        menuState = CLOSE;
+        break;
+    default:
+        break; // Repeats menu as no proper key was typed
+
+    }
+}
+
+void settingsMenu()
+{
+    system("CLS");
+    drawAppTitle();
+    int choice;
+    cout << "\n\n--Settings--" << endl;
+    // Settings options
+    cout << endl << "*********************************************";
+    cout << endl << endl;
+    cout << "Please type your desired action: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+    case 1:
+        menuState = DEPARTMENT_CREATE;
+        break;
+    case 2:
+        menuState = DEPARTMENT_DELETE;
+        break;
+    case 3:
+        menuState = DEPARTMENT_MODIFY;
+        break;
+    case 4:
+        menuState = PERSON_CREATE;
+        break;
+    case 5:
+        menuState = PERSON_DELETE;
+        break;
+    case 6:
+        menuState = PERSON_MODIFY;
+        break;
+    case 7:
+        menuState = SETTINGS;
+        break;
+    case 8:
+        menuState = CLOSE;
+        break;
+    default:
+        break; // Repeats menu as no proper key was typed
+
+    }
+}
+
+void closeApp()
+{
+    system("CLS");
+    // Write data file on modifications...
+    //,.
+
+
+    cout << "Thank you for using HR Management\n";
+
+    cin.ignore();
+    run = false;
 }
 
 int main()
 {
     Init();
-    FullTime t1("Thomas", 24, "Math", "Master");
-    FullTime t2("Michael", 45, "Computer Science", "PhD");
-    PartTime t3("Sarah", 20, "Chemist", "Bachelor", 15);
 
-    Department d1("Computer Engineering", t1);
-    cout << d1.addTeacher(t2) << endl;
-    cout << d1.removeTeacher(t1) << endl;
-    cout << d1.removeTeacher(t2) << endl;
-    cout << d1.removeTeacher(t3) << endl;
+    while (run) // main loop
+    {
+        switch (menuState)
+        {
+            case MAIN_MENU:
+                mainMenu();
+                break;
+            case DEPARTMENT_CREATE:
+                createDepartment();
+                break;
+            case DEPARTMENT_DELETE:
+                deleteDepartment();
+                break;
+            case DEPARTMENT_MODIFY:
+                modifyDepartment();
+                break;
+            case PERSON_CREATE:
+                createPerson();
+                break;
+            case PERSON_DELETE:
+                deletePerson();
+                break;
+            case PERSON_MODIFY:
+                modifyPerson();
+                break;
+            case SETTINGS:
+                settingsMenu();
+                break;
+            case CLOSE:
+                closeApp();
+                break;
 
-    cout << d1.getTeacherList().size() << endl;
+        }
+    }
 
 
     return 0;
