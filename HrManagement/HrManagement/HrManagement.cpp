@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
-#include <stdlib.h>
+
 using namespace std;
 
 bool run = true;
@@ -24,6 +24,7 @@ enum MENU_STATE {
     PERSON_CREATE,
     PERSON_DELETE,
     PERSON_MODIFY,
+    PAYROLLS,
     SETTINGS,
     CLOSE
 
@@ -288,11 +289,11 @@ void mainMenu()
     int choice = -1;
     cout << "\n\n--Main Menu--\n" << endl;
     // Menu options
-    cout << "1--Create Department          4--Create Person" << endl;
+    cout << "1--Create Department          4--Create Person          7--View Payrolls" << endl;
     cout << "2--Delete Department          5--Delete Person" << endl;
     cout << "3--Modify Department          6--Modify Person" << endl;
-    cout << "\n7--Settings" << endl;
-    cout << "8--Exit" << endl;
+    cout << "\n8--Settings" << endl;
+    cout << "9--Exit" << endl;
     cout << endl << "*********************************************";
     cout << endl << endl;
     cout << "Please type your desired action: ";
@@ -319,9 +320,12 @@ void mainMenu()
             menuState = PERSON_MODIFY;
             break;
         case 7:
-            menuState = SETTINGS;
+            menuState = PAYROLLS;
             break;
         case 8:
+            menuState = SETTINGS;
+            break;
+        case 9:
             menuState = CLOSE;
             break;
         default:
@@ -330,6 +334,72 @@ void mainMenu()
     }
 }
 
+Teacher* getTeacherById(int ID)
+{
+    for (int i = 0; i < teacherInstancesVector.size(); i++)
+    {
+        if (teacherInstancesVector[i].getID() == ID)
+        {
+            return &teacherInstancesVector[i];
+        }
+    }
+}
+Staff* getStaffById(int ID)
+{
+    for (int i = 0; i < staffInstancesVector.size(); i++)
+    {
+        if (staffInstancesVector[i].getID() == ID)
+        {
+            return &staffInstancesVector[i];
+        }
+    }
+}
+
+void displayTeacherInformation(Teacher t)
+{
+    system("CLS");
+    drawAppTitle();
+    cout << "\n\n********************INFO********************\n\n";
+    if (t.getType() == "full-time")
+    {
+        cout << "1--Name: " << t.getName() << endl;
+        cout << "#--ID: " << t.getID() << endl;
+        cout << "2--Age: " << t.getAge() << endl;
+        cout << "#--Type: " << t.getType() << endl;
+        cout << "3--Speciality: " << t.getSpeciality() << endl;
+        cout << "4--Degree: " << t.getDegree() << endl;
+        cout << "#--Hours Worked: " << t.getHoursWorked() << endl;
+        cout << endl << "*********************************************" << endl;
+    }
+    else
+    {
+        cout << "1--Name: " << t.getName() << endl;
+        cout << "#--ID: " << t.getID() << endl;
+        cout << "2--Age: " << t.getAge() << endl;
+        cout << "#--Type: " << t.getType() << endl;
+        cout << "3--Speciality: " << t.getSpeciality() << endl;
+        cout << "4--Degree: " << t.getDegree() << endl;
+        cout << "5--Hours Worked: " << t.getHoursWorked() << endl;
+        cout << endl << "*********************************************" << endl;
+    }
+}
+void displayStaffInformation(Staff s)
+{
+    system("CLS");
+    drawAppTitle();
+    cout << "\n\n********************INFO********************\n\n";
+    cout << "1--Name: " << s.getName() << endl;
+    cout << "#--ID: " << s.getID() << endl;
+    cout << "2--Age: " << s.getAge() << endl;
+    cout << "3--Duty: " << s.getDuty() << endl;
+    cout << "4--Workload: " << s.getWorkload() << endl;
+    cout << endl << "*********************************************" << endl;
+}
+
+void displayUserPrompt(string s)
+{
+    cout << endl << "-------------------------------------------------------------------" << endl << s;
+}
 void displayListDepartments()
 {
     int i = 1;
@@ -340,19 +410,29 @@ void displayListDepartments()
     }
     cout << endl << endl << "*********************************************\n";
 }
-
 void displayAllTeachers()
 {
+    cout <<  "\n*******************TEACHER******************\n\n";
     int i = 1;
     for (Teacher t : teacherInstancesVector)
     {
-        if (t.getCategory() == "full-time") cout << i << ". " << t.getName() << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << endl;
-        else cout << i << ". " << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << " | Hours worked: " << t.getHoursWorked() << endl;
+        if (t.getType() == "full-time") cout << i << ". " << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << " | Status: full-time" << endl;
+        else cout << i << ". " << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << " | Status: " << t.getType() << " | Hours worked: " << t.getHoursWorked() << endl;
         i++;
     }
-    cout << endl <<  "*********************************************\n";
+    cout << "\n";
 }
-
+void displayAllStaff()
+{
+    cout << "\n********************STAFF*******************\n\n";
+    int i = 1;
+    for (Staff s : staffInstancesVector)
+    {
+        cout << i << ". " << s.getName() << "(ID: " << s.getID() << ") | Age: " << s.getAge() << " | Category: " << s.getCategory() << " | Duty: " << s.getDuty() << " | Workload: " << s.getWorkload() << endl;
+        i++;
+    }
+    cout << "\n";
+}
 void displayDepartmentListTeacher(Department d)
 {
     int i = 1;
@@ -381,7 +461,7 @@ void createDepartment()
     cout << endl << "\n*********************************************";
     cout << endl << endl;
     do {
-        cout << "Department name: ";
+        displayUserPrompt("Department name: ");
         getline(cin, name);
         for (Department d : departmentInstancesVector)
         {
@@ -404,7 +484,7 @@ void createDepartment()
         while (!departmentCreated)
         {
             displayAllTeachers();
-            cout << "Please assign a teacher to be this department's dean (Enter teacher ID): ";
+            displayUserPrompt("Please assign a teacher to be this department's dean (Enter teacher ID): ");
             cin >> teacherID;
             for (Teacher t : teacherInstancesVector)
             {
@@ -440,7 +520,7 @@ void deleteDepartment()
     if (teacherInstancesVector.size() >= 1)
     {
         displayListDepartments();
-        cout << "Please type the ID number of the department you wish to delete: ";
+        displayUserPrompt("Please type the ID number of the department you wish to delete: ");
         getExpectedIntInput(&departmentID, acceptedInputsDepartmentID, "Invalid input. Please type a valid department ID: ");
         for (int i = 0; i < departmentInstancesVector.size(); i++)
         {
@@ -519,12 +599,12 @@ void createPerson()
     drawAppTitle();
     cout << "\n\n--Create Person--\n" << endl;
     // createPerson
-    cout << "Please indicate the category of the person.\n";
+    cout << "Please indicate the category of the person.\n\n";
     cout << "1--Teacher               2--Staff";
-    cout << endl << "\n*********************************************\n\n";
     displayAllTeachers();
+    displayAllStaff();
     cout << endl << endl;
-    cout << "Please indicate your desired category: ";
+    displayUserPrompt("Please indicate your desired category: ");
     getExpectedIntInput(&categoryChoice, { 1, 2 }, "Incorrect input, please type a correct category: ");
 
         if (categoryChoice == 1)
@@ -536,15 +616,16 @@ void createPerson()
             cout << "Please write the full name of the teacher.";
             cout << endl << "\n*********************************************";
             cout << endl << endl;
-            cout << "Name: ";
+            displayUserPrompt("Name: ");
             getline(cin, name);
-            cout << "\n\nNow please type the teacher's age: ";
+            displayUserPrompt("\nNow please type the teacher's age: ");
             getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
-            cout << "\n\nNow please type the teacher's speciality (i.e. Math, English, etc.): ";
+            displayUserPrompt("\nNow please type the teacher's speciality (i.e. Math, English, etc.): ");
             getline(cin, speciality);
-            cout << "\n\nNow please indicate the teacher's degree. (Default degree: Bachelor)\n1--Bachelor         2--Master         3--PhD\n\nDegree: ";
+            cout << "\nNow please indicate the teacher's degree.\n1--Bachelor         2--Master         3--PhD\n";
+            displayUserPrompt("\nDegree: ");
             getExpectedIntInput(&degreeChoice, { 1, 2, 3 }, "Incorrect input, please type a correct degree: ");
-            cout << "\n\nNow please type the teacher's weekly work hours (32hrs/week will assign the teacher as full-time): ";
+            displayUserPrompt("\nNow please type the teacher's weekly work hours (32hrs/week will assign the teacher as full-time): ");
             getExpectedIntInput(&hoursWorked, { -1, 3, 32 }, "Accepted work time ranges from 3-32 Hours/Week: ");
 
             switch (degreeChoice)
@@ -576,22 +657,22 @@ void createPerson()
             drawAppTitle();
             cout << "\n\n--Create Person-STAFF--\n" << endl;
             // createPerson options
-            cout << "Please write the full name of the staff person.";
+            displayUserPrompt("Please write the full name of the staff person.");
             cout << endl << "\n*********************************************";
             cout << endl << endl;
             cout << "Name: ";
             getline(cin, name);
-            cout << "\n\nNow please type the staff person's age: ";
+            displayUserPrompt("\nNow please type the staff person's age: ");
             getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
-            cout << "\n\nNow please type the staff person's duty: ";
+            displayUserPrompt("\nNow please type the staff person's duty");
             getline(cin, duty);
-            cout << "\n\nNow please type the staff person's workload: ";
-            getExpectedIntInput(&hoursWorked, { -1, 3, 32 }, "Accepted workload ranges from 3-32 Hours/Week: ");
+            displayUserPrompt("\nNow please type the staff person's workload: ");
+            getExpectedIntInput(&workload, { -1, 3, 32 }, "Accepted workload ranges from 3-32 Hours/Week: ");
 
             Staff s(name, age, duty, workload);
             staffInstancesVector.push_back(s);
         }
-    cout << "Person created successfully. \n";
+    cout << "\nPerson created successfully. \n\n";
     system("pause");
     menuState = MAIN_MENU;
 }
@@ -600,80 +681,204 @@ void deletePerson()
 {
     system("CLS");
     drawAppTitle();
+    int personID = -1;
+    vector<int> acceptedInputsPersonID = {};
+    for (Teacher t : teacherInstancesVector)
+    {
+        acceptedInputsPersonID.push_back(t.getID());
+    }
+    for (Staff s : staffInstancesVector)
+    {
+        acceptedInputsPersonID.push_back(s.getID());
+    }
+
+    cout << "\n--Delete Person--" << endl;
+    // deletePerson options
+    if (teacherInstancesVector.size() == 0 && staffInstancesVector.size() == 0)
+    {
+        cout << "The college currently has no employee to modify.\nReturn to main menu.\n ";
+        system("pause");
+        menuState = MAIN_MENU;
+    }
+    else
+    {
+        displayAllTeachers();
+        displayAllStaff();
+        displayUserPrompt("Please type the ID number of the person you wish to delete: ");
+        getExpectedIntInput(&personID, acceptedInputsPersonID, "Invalid input. Please type a valid ID: ");
+        for (int i = 0; i < teacherInstancesVector.size(); i++)
+        {
+            if (teacherInstancesVector[i].getID() == personID)
+            {
+                teacherInstancesVector.erase(teacherInstancesVector.begin()+i);
+                acceptedInputsPersonID.clear();
+            }
+        }
+        for (int i = 0; i < staffInstancesVector.size(); i++)
+        {
+            if (staffInstancesVector[i].getID() == personID)
+            {
+                staffInstancesVector.erase(staffInstancesVector.begin() + i);
+                acceptedInputsPersonID.clear();
+            }
+        }
+    }
+}
+
+void modifyPerson()
+{
+    int categoryChoice = -1;
     int teacherID = -1;
+    int staffID = -1;
+    int newHoursWorked = -1;
+    int newWorkload = -1;
+    int newDegreeChoice = -1;
+    int newAge = -1;
+    string newDegree;
+    string newName;
+    string newSpeciality;
+    string newDuty;
+
+    Teacher* modifiedTeacher;
+    Staff* modifiedStaff;
+
     vector<int> acceptedInputsTeacherID = {};
     for (Teacher t : teacherInstancesVector)
     {
         acceptedInputsTeacherID.push_back(t.getID());
     }
 
-    cout << "\n\n--Delete Person--" << endl;
-    // deletePerson options
-    cout << endl << "*********************************************\n\n";
-    if (teacherInstancesVector.size() >= 1)
+    vector<int> acceptedInputsStaffID = {};
+    for (Staff s : staffInstancesVector)
     {
-        displayAllTeachers();
-        cout << "Please type the ID number of the teacher you wish to delete: ";
-        getExpectedIntInput(&teacherID, acceptedInputsTeacherID, "Invalid input. Please type a valid teacher ID: ");
-        for (int i = 0; i < teacherInstancesVector.size(); i++)
-        {
-            if (teacherInstancesVector[i].getID() == teacherID)
-            {
-                teacherInstancesVector.erase(teacherInstancesVector.begin()+i);
-                acceptedInputsTeacherID.clear();
-            }
-        }
+        acceptedInputsStaffID.push_back(s.getID());
     }
-    else
+
+    system("CLS");
+    drawAppTitle();
+    cout << "\n\n--Modify Person--\n" << endl;
+    // createPerson
+    cout << "Please indicate the category of the person you wish to modify.\n";
+    cout << "1--Teacher               2--Staff";
+    cout << endl << "\n*********************************************\n\n";
+    cout << endl << endl;
+
+    if (teacherInstancesVector.size() == 0 && staffInstancesVector.size() == 0)
     {
-        cout << "There are currently no existing teachers in the college.\nPlease return to main menu.\n";
+        cout << "The college currently has no employee to modify.\nReturn to main menu.\n ";
         system("pause");
         menuState = MAIN_MENU;
     }
+    else
+    {
+        displayUserPrompt("Please indicate your desired category: ");
+        getExpectedIntInput(&categoryChoice, { 1, 2 }, "Incorrect input, please type a correct category: ");
+
+        vector<int> acceptedInputs;
+        int propertyInput = -1;
+        switch (categoryChoice)
+        {
+        case 1:
+
+            displayAllTeachers();
+            displayUserPrompt("\nPlease type the ID number of the teacher you wish to modify: ");
+            getExpectedIntInput(&teacherID, acceptedInputsTeacherID, "Invalid input. Please type a valid teacher ID: ");
+            modifiedTeacher = getTeacherById(teacherID);
+            displayTeacherInformation(*modifiedTeacher);
+            if (modifiedTeacher->getType() == "full-time") acceptedInputs = { 1, 2, 3, 4 };
+            else acceptedInputs = { 1, 2, 3, 4, 5 };
+
+            displayUserPrompt("\nPlease type the property you wish to modify: ");
+            getExpectedIntInput(&propertyInput, acceptedInputs, "Invalid input. Please type a valid and modifiable property: ");
+            switch (propertyInput)
+            {
+                case 1:
+                    displayUserPrompt("\nPlease type the desired new name for " + modifiedTeacher->getName() + ": ");
+                    getline(cin, newName);
+                    modifiedTeacher->setName(newName);
+                    break;
+                case 2:
+                    displayUserPrompt("\nPlease type the desired new age for " + modifiedTeacher->getName() + ": ");
+                    getExpectedIntInput(&newAge, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
+                    modifiedTeacher->setAge(newAge);
+                    break;
+                case 3:
+                    displayUserPrompt("\nPlease type the desired new speciality for " + modifiedTeacher->getName() + ": ");
+                    getline(cin, newSpeciality);
+                    modifiedTeacher->setSpeciality(newSpeciality);
+                    break;
+                case 4:
+                    displayUserPrompt("\nPlease type the desired new degree for " + modifiedTeacher->getName() + ".\n1--Bachelor         2--Master         3--PhD\n\nDegree: ");
+                    getExpectedIntInput(&newDegreeChoice, { 1, 2, 3 }, "Incorrect input, please type a correct degree: ");
+                    switch (newDegreeChoice)
+                    {
+                    case 1:
+                        newDegree = "Bachelor";
+                        break;
+                    case 2:
+                        newDegree = "Master";
+                        break;
+                    case 3:
+                        newDegree = "PhD";
+                        break;
+                    }
+                    modifiedTeacher->setDegree(newDegree);
+                    break;
+                case 5:
+                    displayUserPrompt("\nPlease type the desired new work hours for " + modifiedTeacher->getName() + " (3-31 Hours/Week): ");
+                    getExpectedIntInput(&newDegreeChoice, { -1, 3, 31 }, "Incorrect input, please type valid work hours: ");
+                    modifiedTeacher->setHoursWorked(newDegreeChoice);
+                    break;
+            }
+            cout << "\nTeacher modified successfully. \n\n";
+            system("pause");
+            menuState = MAIN_MENU;
+            break;
+        case 2:
+            displayAllStaff();
+            displayUserPrompt("\nPlease type the ID number of the staff person you wish to modify: ");
+            getExpectedIntInput(&staffID, acceptedInputsStaffID, "Invalid input. Please type a valid staff person ID: ");
+            modifiedStaff = getStaffById(staffID);
+            displayStaffInformation(*modifiedStaff);
+            acceptedInputs = { 1, 2, 3, 4 };
+
+            displayUserPrompt("\nPlease type the property you wish to modify: ");
+            getExpectedIntInput(&propertyInput, acceptedInputs, "Invalid input. Please type a valid and modifiable property: ");
+            switch (propertyInput)
+            {
+            case 1:
+                displayUserPrompt("\nPlease type the desired new name for " + modifiedStaff->getName() + ": ");
+                getline(cin, newName);
+                modifiedStaff->setName(newName);
+                break;
+            case 2:
+                displayUserPrompt("\nPlease type the desired new age for " + modifiedStaff->getName() + ": ");
+                getExpectedIntInput(&newAge, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
+                modifiedStaff->setAge(newAge);
+                break;
+            case 3:
+                displayUserPrompt("\nPlease type the desired new spociality for " + modifiedStaff->getName() + ": ");
+                getline(cin, newDuty);
+                modifiedStaff->setDuty(newDuty);
+                break;
+            case 4:
+                displayUserPrompt("\nPlease type the desired new workload for " + modifiedStaff->getName() + ": ");
+                getExpectedIntInput(&newWorkload, { -1, 3, 32 }, "Accepted workload ranges from 3-32 Hours/Week: ");
+                modifiedStaff->setWorkload(newWorkload);
+                break;
+            }
+            cout << "\nStaff modified successfully. \n\n";
+            system("pause");
+            menuState = MAIN_MENU;
+            break;
+        }
+    }
+
 }
 
-void modifyPerson()
+void payrolls()
 {
-    system("CLS");
-    drawAppTitle();
-    int choice;
-    cout << "\n\n--Modify Person--" << endl;
-    // modifyPerson options
-    cout << endl << "*********************************************";
-    cout << endl << endl;
-    cout << "Please type your desired action: ";
-    cin >> choice;
 
-    switch (choice)
-    {
-    case 1:
-        menuState = DEPARTMENT_CREATE;
-        break;
-    case 2:
-        menuState = DEPARTMENT_DELETE;
-        break;
-    case 3:
-        menuState = DEPARTMENT_MODIFY;
-        break;
-    case 4:
-        menuState = PERSON_CREATE;
-        break;
-    case 5:
-        menuState = PERSON_DELETE;
-        break;
-    case 6:
-        menuState = PERSON_MODIFY;
-        break;
-    case 7:
-        menuState = SETTINGS;
-        break;
-    case 8:
-        menuState = CLOSE;
-        break;
-    default:
-        break; // Repeats menu as no proper key was typed
-
-    }
 }
 
 void settingsMenu()
@@ -728,6 +933,9 @@ int main()
                 deletePerson();
                 break;
             case PERSON_MODIFY:
+                modifyPerson();
+                break;
+            case PAYROLLS:
                 modifyPerson();
                 break;
             case SETTINGS:
