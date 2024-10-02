@@ -4,8 +4,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <unordered_map>
-
+#include <stdlib.h>
 using namespace std;
 
 bool run = true;
@@ -259,6 +260,27 @@ int Init() // Get called at the start of the program, will either create a data 
     return 0;
 }
 
+void getExpectedIntInput(int* var, vector<int> expectedInputs, string errorMessage)
+{
+    // If first int of provided vector is -1, then assume the two other elements represent an integer range. If not just treat each value in vector as valid inputs
+    int newInt;
+    cin >> newInt;
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    if (expectedInputs[0] == -1)
+    {   // If vector represents a range of valid inputs
+        for (int i = expectedInputs[1]; i <= expectedInputs[2]; i++)
+        {
+            if (i == newInt) *var = newInt;
+        } 
+    }
+    else if (find(expectedInputs.begin(), expectedInputs.end(), newInt) != expectedInputs.end()) *var = newInt;
+    if (*var == -1) {
+        cout << errorMessage;
+        getExpectedIntInput(var, expectedInputs, errorMessage);
+    }
+}
+
 void mainMenu()
 {
     system("CLS");
@@ -314,7 +336,7 @@ void createDepartment()
     drawAppTitle();
     bool departmentCreated = false;
 
-    string name;
+    string name = "";
     int goToPersonCreatePrompt;
     int teacherID;
     cout << "\n\n--Create Department--\n" << endl;
@@ -323,8 +345,18 @@ void createDepartment()
     cout << "Please type a name for the new department";
     cout << endl << "\n*********************************************";
     cout << endl << endl;
-    cout << "Department name: ";
-    getline(cin, name);
+    do {
+        cout << "Department name: ";
+        getline(cin, name);
+        for (Department d : departmentInstancesVector)
+        {
+            if (transform(name.begin(), name.end(), name.begin(), ::toupper) == transform(d.getName().begin(), d.getName().end(), d.getName().begin(), ::toupper))
+            {
+                cout << "Department already exists\n";
+                name = "";
+            }
+        }
+    } while (name.length() == 0);
     cout << endl;
     if (teacherInstancesVector.size() == 0)
     {
@@ -357,7 +389,7 @@ void createDepartment()
             }
             if (!departmentCreated) cout << "ID provided does not match any existing teacher.\n";
         }
-        cout << "Department has been created successfully. ";
+        cout << "Department has been created successfully. \n";
         system("pause");
         menuState = MAIN_MENU;
     }
@@ -453,99 +485,92 @@ void modifyDepartment()
 
 void createPerson()
 {
+    int categoryChoice = -1;
+    int age = -1;
+    int degreeChoice = -1;
+    int hoursWorked = -1;
+    int workload = -1;
+    string name;
+    string speciality;
+    string degree;
+    string duty;
+
     system("CLS");
     drawAppTitle();
-    int categoryChoice;
-    string name;
-    int age;
-    string speciality;
-    int degreeChoice;
-    string degree;
-    int hoursWorked;
-    string duty;
-    int workload;
     cout << "\n\n--Create Person--\n" << endl;
-    // createPerson options
+    // createPerson
     cout << "Please indicate the category of the person.\n";
     cout << "1--Teacher               2--Staff";
     cout << endl << "\n*********************************************";
     cout << endl << endl;
     cout << "Please indicate your desired category: ";
-    cin >> categoryChoice;
+    getExpectedIntInput(&categoryChoice, { 1, 2 }, "Incorrect input, please type a correct category: ");
 
-    if (categoryChoice == 1)
-    {
-        system("CLS");
-        drawAppTitle();
-        cout << "\n\n--Create Person-TEACHER--\n" << endl;
-        // createPerson options
-        cout << "Please write the full name of the teacher.";
-        cout << endl << "\n*********************************************";
-        cout << endl << endl;
-        cout << "Name: ";
-        cin.get();
-        getline(cin, name);
-        cout << "\n\nNow please type the teacher's age: ";
-        cin.get();
-        cin >> age;
-        cout << "\n\nNow please type the teacher's speciality (i.e. Math, English, etc.): ";
-        cin.get();
-        getline(cin, speciality);
-        cout << "\n\nNow please indicate the teacher's degree. (Default degree: Bachelor)\n1--Bachelor         2--Master         3--PhD\n\nDegree: ";
-        cin >> degreeChoice;
-        cout << "\n\nNow please type the teacher's weekly work hours (32hrs/week will assign the teacher as full-time): ";
-        cin.get();
-        cin >> hoursWorked;
+        if (categoryChoice == 1)
+        {
+            system("CLS");
+            drawAppTitle();
+            cout << "\n\n--Create Person-TEACHER--\n" << endl;
+            // createPerson options
+            cout << "Please write the full name of the teacher.";
+            cout << endl << "\n*********************************************";
+            cout << endl << endl;
+            cout << "Name: ";
+            getline(cin, name);
+            cout << "\n\nNow please type the teacher's age: ";
+            getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
+            cout << "\n\nNow please type the teacher's speciality (i.e. Math, English, etc.): ";
+            getline(cin, speciality);
+            cout << "\n\nNow please indicate the teacher's degree. (Default degree: Bachelor)\n1--Bachelor         2--Master         3--PhD\n\nDegree: ";
+            getExpectedIntInput(&degreeChoice, { 1, 2, 3 }, "Incorrect input, please type a correct degree: ");
+            cout << "\n\nNow please type the teacher's weekly work hours (32hrs/week will assign the teacher as full-time): ";
+            getExpectedIntInput(&hoursWorked, { -1, 3, 32 }, "Accepted work time ranges from 3-32 Hours/Week: ");
 
-        switch (degreeChoice)
-        {
-        case 2:
-            degree = "Master";
-            break;
-        case 3: 
-            degree = "PhD";
-            break;
-        default:
-            degree = "Bachelor";
-            break;
+            switch (degreeChoice)
+            {
+            case 2:
+                degree = "Master";
+                break;
+            case 3:
+                degree = "PhD";
+                break;
+            default:
+                degree = "Bachelor";
+                break;
+            }
+            if (hoursWorked == 32)
+            {
+                FullTime t(name, age, speciality, degree);
+                teacherInstancesVector.push_back(t);
+            }
+            else
+            {
+                PartTime t(name, age, speciality, degree, hoursWorked);
+                teacherInstancesVector.push_back(t);
+            }
         }
-        if (hoursWorked == 32)
+        else if (categoryChoice == 2)
         {
-            FullTime t(name, age, speciality, degree);
-            teacherInstancesVector.push_back(t);
-        }
-        else
-        {
-            PartTime t(name, age, speciality, degree, hoursWorked);
-            teacherInstancesVector.push_back(t);
-        }
-    }
-    else if (categoryChoice == 2)
-    {
-        system("CLS");
-        drawAppTitle();
-        cout << "\n\n--Create Person-STAFF--\n" << endl;
-        // createPerson options
-        cout << "Please write the full name of the staff person.";
-        cout << endl << "\n*********************************************";
-        cout << endl << endl;
-        cout << "Name: ";
-        cin.get();
-        getline(cin, name);
-        cout << "\n\nNow please type the staff person's age: ";
-        cin.get();
-        cin >> age;
-        cout << "\n\nNow please type the staff person's duty: ";
-        cin.get();
-        getline(cin, duty);
-        cout << "\n\nNow please type the staff person's workload: ";
-        cin.get();
-        cin >> workload;
+            system("CLS");
+            drawAppTitle();
+            cout << "\n\n--Create Person-STAFF--\n" << endl;
+            // createPerson options
+            cout << "Please write the full name of the staff person.";
+            cout << endl << "\n*********************************************";
+            cout << endl << endl;
+            cout << "Name: ";
+            getline(cin, name);
+            cout << "\n\nNow please type the staff person's age: ";
+            getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
+            cout << "\n\nNow please type the staff person's duty: ";
+            getline(cin, duty);
+            cout << "\n\nNow please type the staff person's workload: ";
+            getExpectedIntInput(&hoursWorked, { -1, 3, 32 }, "Accepted workload ranges from 3-32 Hours/Week: ");
 
-        Staff s(name, age, duty, workload);
-        staffInstancesVector.push_back(s);
-    }
-    cout << "Person created successfully. ";
+            Staff s(name, age, duty, workload);
+            staffInstancesVector.push_back(s);
+        }
+    cout << "Person created successfully. \n";
     system("pause");
     menuState = MAIN_MENU;
 }
