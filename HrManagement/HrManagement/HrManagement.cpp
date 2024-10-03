@@ -113,7 +113,7 @@ struct Teacher : public Person { // Teacher class declaration and inherits from 
         void setCategory() { category = "Teacher"; }
 
     public:
-        virtual float ComputePayRoll() const { return 0; }
+        virtual float ComputePayRoll() const { return 0.0f; }
 
         // SETTERS 
         void setHoursWorked(int i) { hoursWorked = i; }
@@ -170,8 +170,8 @@ struct FullTime : public Teacher { // FullTime class declaration and inherits fr
 
 };
 
-vector<Teacher> teacherInstancesVector = {};
-vector<Staff> staffInstancesVector = {};
+vector<Teacher*> teacherInstancesVector = {};
+vector<Staff*> staffInstancesVector = {};
 
 struct Department{ // Department class declaration
     private:
@@ -204,6 +204,7 @@ struct Department{ // Department class declaration
         string getName() const { return name; }
         Teacher getDean() const { return dean; }
         vector<Teacher> getTeacherList() const { return teacherList; }
+        vector<Staff> getStaffList() const { return staffList; }
 
         string addTeacher(Teacher t) // First check if teacher is already in dept. if not, add and return success message, if yes, return error message
         {
@@ -232,6 +233,33 @@ struct Department{ // Department class declaration
             else return (t.getName() + " is not in the \"" + name + "\" department."); // Error message
         }
 
+        string addStaff(Staff s) // First check if staff is already in dept. if not, add and return success message, if yes, return error message
+        {
+            for (Staff x : staffList)
+            {
+                if (x.getID() == s.getID())
+                {
+                    return (s.getName() + " is already assigned in the \"" + name + "\" department."); // Error message
+                }
+            }
+            staffList.push_back(s);
+            return ("Added " + s.getName() + " to the \"" + name + "\" department."); // Success message
+        }
+        string removeStaff(Staff s) // First check if staff is already in dept. if yes, remove and return success message, if not, return error message. 
+        {
+            for (int i = 0; i < staffList.size(); i++)
+            {
+                if (staffList[i].getID() == s.getID() && staffList[i].getID())
+                {
+                    if (staffList[i].getID() == dean.getID()) return ("Cannot remove dean from department. Please assign a new dean first.");
+                    staffList.erase(staffList.begin() + i);
+                    return ("Removed " + s.getName() + " from the \"" + name + "\" department."); // Success message
+                }
+            }
+            if (staffList.size() == 0) return ("Department currently has no teachers.");
+            else return (s.getName() + " is not in the \"" + name + "\" department."); // Error message
+        }
+
         Department(string name, Teacher dean)
         {
             setName(name);
@@ -241,7 +269,7 @@ struct Department{ // Department class declaration
 
 };
 int Department::nextID = 1;
-vector<Department> departmentInstancesVector = {};
+vector<Department*> departmentInstancesVector = {};
 
 int getPersonnelAvgAge()
 {   
@@ -285,77 +313,38 @@ void getExpectedIntInput(int* var, vector<int> expectedInputs, string errorMessa
     }
 }
 
-void mainMenu()
-{
-    system("CLS");
-    drawAppTitle();
-    int choice = -1;
-    cout << "\n\n--Main Menu--\n" << endl;
-    // Menu options
-    cout << "1--Create Department          4--Create Person          7--View Payrolls" << endl;
-    cout << "2--Delete Department          5--Delete Person" << endl;
-    cout << "3--Modify Department          6--Modify Person" << endl;
-    cout << "\n8--Settings" << endl;
-    cout << "9--Exit" << endl;
-    cout << endl << "*********************************************";
-    cout << endl << endl;
-    cout << "Please type your desired action: ";
-    getExpectedIntInput(&choice, { -1, 1, 9 }, "Invalid option. Please type a valid menu option: ");
-
-    switch(choice)
-    {
-        case 1:
-            menuState = DEPARTMENT_CREATE;
-            break;
-        case 2:
-            menuState = DEPARTMENT_DELETE;
-            break;
-        case 3:
-            menuState = DEPARTMENT_MODIFY;
-            break;
-        case 4:
-            menuState = PERSON_CREATE;
-            break;
-        case 5:
-            menuState = PERSON_DELETE;
-            break;
-        case 6:
-            menuState = PERSON_MODIFY;
-            break;
-        case 7:
-            menuState = PAYROLLS;
-            break;
-        case 8:
-            menuState = SETTINGS;
-            break;
-        case 9:
-            menuState = CLOSE;
-            break;
-        default:
-            break; // Repeats menu as no proper key was typed
-
-    }
-}
-
 Teacher* getTeacherById(int ID)
 {
     for (int i = 0; i < teacherInstancesVector.size(); i++)
     {
-        if (teacherInstancesVector[i].getID() == ID)
+        if (teacherInstancesVector[i]->getID() == ID)
         {
-            return &teacherInstancesVector[i];
+            return teacherInstancesVector[i];
         }
     }
+    return nullptr;
 }
 Staff* getStaffById(int ID)
 {
     for (int i = 0; i < staffInstancesVector.size(); i++)
     {
-        if (staffInstancesVector[i].getID() == ID)
+        if (staffInstancesVector[i]->getID() == ID)
         {
-            return &staffInstancesVector[i];
+            return staffInstancesVector[i];
         }
     }
+    return nullptr;
+}
+Department* getDepartmentById(int ID)
+{
+    for (int i = 0; i < departmentInstancesVector.size(); i++)
+    {
+        if (departmentInstancesVector[i]->getID() == ID)
+        {
+            return departmentInstancesVector[i];
+        }
+    }
+    return nullptr;
 }
 
 void displayTeacherInformation(Teacher t)
@@ -411,9 +400,9 @@ void displayUserPrompt(string s)
 void displayListDepartments()
 {
     int i = 1;
-    for (Department d : departmentInstancesVector)
+    for (Department* d : departmentInstancesVector)
     {
-        cout << i << ". " << d.getName() << " | Dean: " << d.getDean().getName() << "(" << d.getDean().getID() << ") | Dept. ID: " << d.getID() << endl;
+        cout << i << ". " << d->getName() << " | Dean: " << d->getDean().getName() << "(" << d->getDean().getID() << ") | Dept. ID: " << d->getID() << endl;
         i++;
     }
     cout << endl << endl << "*********************************************\n";
@@ -422,10 +411,10 @@ void displayAllTeachers()
 {
     cout <<  "\n*******************TEACHER******************\n\n";
     int i = 1;
-    for (Teacher t : teacherInstancesVector)
+    for (Teacher* t : teacherInstancesVector)
     {
-        if (t.getType() == "full-time") cout << i << ". " << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << " | Status: full-time" << endl;
-        else cout << i << ". " << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << " | Status: " << t.getType() << " | Hours worked: " << t.getHoursWorked() << endl;
+        if (t->getType() == "full-time") cout << i << ". " << t->getName() << "(ID: " << t->getID() << ") | Age: " << t->getAge() << " | Category: " << t->getCategory() << " | Speciality: " << t->getSpeciality() << " | Degree: " << t->getDegree() << " | Status: full-time" << endl;
+        else cout << i << ". " << t->getName() << "(ID: " << t->getID() << ") | Age: " << t->getAge() << " | Category: " << t->getCategory() << " | Speciality: " << t->getSpeciality() << " | Degree: " << t->getDegree() << " | Status: " << t->getType() << " | Hours worked: " << t->getHoursWorked() << endl;
         i++;
     }
     cout << "\n";
@@ -434,125 +423,44 @@ void displayAllStaff()
 {
     cout << "\n********************STAFF*******************\n\n";
     int i = 1;
-    for (Staff s : staffInstancesVector)
+    for (Staff* s : staffInstancesVector)
     {
-        cout << i << ". " << s.getName() << "(ID: " << s.getID() << ") | Age: " << s.getAge() << " | Category: " << s.getCategory() << " | Duty: " << s.getDuty() << " | Workload: " << s.getWorkload() << endl;
+        cout << i << ". " << s->getName() << "(ID: " << s->getID() << ") | Age: " << s->getAge() << " | Category: " << s->getCategory() << " | Duty: " << s->getDuty() << " | Workload: " << s->getWorkload() << endl;
         i++;
     }
     cout << "\n";
 }
 void displayDepartmentListTeacher(Department d)
 {
-    int i = 1;
     for (Teacher t : d.getTeacherList())
     {
-        if (t.getCategory() == "full-time") cout << i << ". " << t.getName() << t.getName() << "(ID: " << t.getID() << ") | Age: " << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << endl;
-        else cout << i << ". " << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << " | Hours worked: " << t.getHoursWorked() << endl ;
-        i++;
+        if (t.getCategory() == "full-time") cout << " -" << t.getName() << "(ID: " << t.getID() << ") | Age: " << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << endl;
+        else cout << " -" << t.getName() << "(ID: " << t.getID() << ") | Age: " << t.getAge() << " | Category: " << t.getCategory() << " | Speciality: " << t.getSpeciality() << " | Degree: " << t.getDegree() << " | Hours worked: " << t.getHoursWorked() << endl ;
     }
-    cout << endl <<  "*********************************************\n";
 }
-
-void createDepartment()
+void displayDepartmentListStaff(Department d)
 {
-    bool departmentCreated = false;
-    string name = "";
-    int goToPersonCreatePrompt;
-    int teacherID;
-
-    displayPageTitle("Create Department");
-    displayListDepartments();
-    // createDepartment steps
-    cout << "Please type a name for the new department";
-    cout << endl << "\n*********************************************";
-    cout << endl << endl;
-    do {
-        displayUserPrompt("Department name: ");
-        getline(cin, name);
-        for (Department d : departmentInstancesVector)
-        {
-            if (transform(name.begin(), name.end(), name.begin(), ::toupper) == transform(d.getName().begin(), d.getName().end(), d.getName().begin(), ::toupper))
-            {
-                cout << "Department already exists\n";
-                name = "";
-            }
-        }
-    } while (name.length() == 0);
-    cout << endl;
-    if (teacherInstancesVector.size() == 0)
+    for (Staff s : d.getStaffList())
     {
-        cout << "There are currently no existing teacher in the college.\nPlease create a teacher first to assign as dean. \n\n ";
-        system("pause");
-        menuState = MAIN_MENU;
-    }
-    else
-    {
-        while (!departmentCreated)
-        {
-            displayAllTeachers();
-            displayUserPrompt("Please assign a teacher to be this department's dean (Enter teacher ID): ");
-            cin >> teacherID;
-            for (Teacher t : teacherInstancesVector)
-            {
-                if (t.getID() == teacherID)
-                {
-                    Department d(name, t);
-                    departmentInstancesVector.push_back(d);
-                    departmentCreated = true;
-                }
-            }
-            if (!departmentCreated) cout << "ID provided does not match any existing teacher.\n";
-        }
-        cout << "Department has been created successfully. \n";
-        system("pause");
-        menuState = MAIN_MENU;
+        cout << " -" << s.getName() << "(ID: " << s.getID() << ") | Age: " << " | Category: " << s.getCategory() << " | Duty: " << s.getDuty() << " | Workload: " << s.getWorkload() << endl;
     }
 }
 
-void deleteDepartment()
+void mainMenu()
 {
-    int departmentID = -1;
-    vector<int> acceptedInputsDepartmentID = {};
-    for (Department d : departmentInstancesVector)
-    {
-        acceptedInputsDepartmentID.push_back(d.getID());
-    }
 
-    displayPageTitle("Delete Department");
-    // deletePerson options
-    cout << endl << "*********************************************\n\n";
-    if (teacherInstancesVector.size() >= 1)
-    {
-        displayListDepartments();
-        displayUserPrompt("Please type the ID number of the department you wish to delete: ");
-        getExpectedIntInput(&departmentID, acceptedInputsDepartmentID, "Invalid input. Please type a valid department ID: ");
-        for (int i = 0; i < departmentInstancesVector.size(); i++)
-        {
-            if (departmentInstancesVector[i].getID() == departmentID)
-            {
-                departmentInstancesVector.erase(departmentInstancesVector.begin() + i);
-                acceptedInputsDepartmentID.clear();
-            }
-        }
-    }
-    else
-    {
-        cout << "There are currently no existing departments in the college.\nPlease return to main menu.\n";
-        system("pause");
-        menuState = MAIN_MENU;
-    }
-}
-
-void modifyDepartment()
-{
-    int choice;
-
-    displayPageTitle("Modify Department");
-    // modifyDepartment options
+    int choice = -1;
+    displayPageTitle("Main Menu");
+    // Menu options
+    cout << "1--Create Department          4--Create Person          7--View Payrolls" << endl;
+    cout << "2--Delete Department          5--Delete Person" << endl;
+    cout << "3--Modify Department          6--Modify Person" << endl;
+    cout << "\n8--Settings" << endl;
+    cout << "9--Exit" << endl;
     cout << endl << "*********************************************";
     cout << endl << endl;
     cout << "Please type your desired action: ";
-    cin >> choice;
+    getExpectedIntInput(&choice, { -1, 1, 9 }, "Invalid option. Please type a valid menu option: ");
 
     switch (choice)
     {
@@ -575,15 +483,241 @@ void modifyDepartment()
         menuState = PERSON_MODIFY;
         break;
     case 7:
-        menuState = SETTINGS;
+        menuState = PAYROLLS;
         break;
     case 8:
+        menuState = SETTINGS;
+        break;
+    case 9:
         menuState = CLOSE;
         break;
     default:
         break; // Repeats menu as no proper key was typed
 
     }
+}
+
+void createDepartment()
+{
+    bool departmentCreated = false;
+    string name = "";
+    int goToPersonCreatePrompt;
+    int teacherID;
+
+    displayPageTitle("Create Department");
+    displayListDepartments();
+    // createDepartment steps
+    cout << "Please type a name for the new department";
+    cout << endl << "\n*********************************************";
+    cout << endl << endl;
+    do {
+        displayUserPrompt("Department name: ");
+        getline(cin, name);
+        string upperName;
+        for (char x : name) upperName += toupper(x); // Turns the dept. name in all uppercase so it can be compared to other dept. names in uppercase and see if it already exists
+        for (Department* d : departmentInstancesVector)
+        {
+            string upperDeptName;
+            for (char y : d->getName()) upperDeptName += toupper(y);
+
+            if (upperName == upperDeptName) // Same name dept. already exists, prompt for a new name
+            {
+                cout << "Department already exists\n";
+                name = "";
+            }
+        }
+    } while (name.length() == 0);
+    cout << endl;
+    if (teacherInstancesVector.size() == 0)
+    {
+        cout << "There are currently no existing teacher in the college.\nPlease create a teacher first to assign as dean. \n\n ";
+        system("pause");
+        menuState = MAIN_MENU;
+    }
+    else
+    {
+        while (!departmentCreated)
+        {
+            displayAllTeachers();
+            displayUserPrompt("Please assign a teacher to be this department's dean (Enter teacher ID): ");
+            cin >> teacherID;
+            for (Teacher* t : teacherInstancesVector)
+            {
+                if (t->getID() == teacherID)
+                {
+                    Department* d = new Department(name, *t);
+                    departmentInstancesVector.push_back(d);
+                    departmentCreated = true;
+                }
+            }
+            if (!departmentCreated) cout << "ID provided does not match any existing teacher.\n";
+        }
+        cout << "Department has been created successfully. \n";
+        system("pause");
+        menuState = MAIN_MENU;
+    }
+}
+
+void deleteDepartment()
+{
+    int departmentID = -1;
+    vector<int> acceptedInputsDepartmentID = {};
+    for (Department* d : departmentInstancesVector)
+    {
+        acceptedInputsDepartmentID.push_back(d->getID());
+    }
+
+    displayPageTitle("Delete Department");
+    // deletePerson options
+    cout << endl << "*********************************************\n\n";
+    if (teacherInstancesVector.size() >= 1)
+    {
+        displayListDepartments();
+        displayUserPrompt("Please type the ID number of the department you wish to delete: ");
+        getExpectedIntInput(&departmentID, acceptedInputsDepartmentID, "Invalid input. Please type a valid department ID: ");
+        for (int i = 0; i < departmentInstancesVector.size(); i++)
+        {
+            if (departmentInstancesVector[i]->getID() == departmentID)
+            {
+                departmentInstancesVector.erase(departmentInstancesVector.begin() + i);
+                acceptedInputsDepartmentID.clear();
+            }
+        }
+    }
+    else
+    {
+        cout << "There are currently no existing departments in the college.\nPlease return to main menu.\n";
+        system("pause");
+        menuState = MAIN_MENU;
+    }
+}
+
+void modifyDepartment()
+{
+    vector<int> acceptedInputsDepartmentID = {};
+    int departmentIDChoice = -1;
+    int addRemoveChangeChoice = -1;
+    vector<int> acceptedInputsRemovePersonID = {};
+    vector<int> everyPersonID = {};
+    vector<int> acceptedInputsTeachersID = {};
+    int personIDChoice = -1;
+    int newDeanID = -1;
+
+
+    displayPageTitle("Modify Department");
+    // modifyDepartment options
+    for (Department* d : departmentInstancesVector)
+    {
+        acceptedInputsDepartmentID.push_back(d->getID());
+    }
+    for (Teacher* t : teacherInstancesVector)
+    {
+        everyPersonID.push_back(t->getID());
+    }
+    for (Staff* s : staffInstancesVector)
+    {
+        everyPersonID.push_back(s->getID());
+    }
+
+    if (departmentInstancesVector.size() == 0)
+    {
+        cout << "The college currently has no departments to modify.\nReturn to main menu.\n";
+        system("pause");
+        menuState = MAIN_MENU;
+    }
+    else
+    {
+        displayListDepartments();
+        displayUserPrompt("Please type the ID of the department you wish to modify : ");
+        getExpectedIntInput(&departmentIDChoice, acceptedInputsDepartmentID, "Invalid input. Please type a valid department ID: ");
+
+        Department* d = getDepartmentById(departmentIDChoice);
+        cout << endl << endl;
+
+        displayPageTitle(d->getName());
+        displayDepartmentListTeacher(*d);
+        displayDepartmentListStaff(*d);
+        cout << endl << "*********************************************\n";
+
+        for (Teacher t : d->getTeacherList())
+        {
+            Teacher* tptr = getTeacherById(t.getID());
+            acceptedInputsTeachersID.push_back(tptr->getID());
+            acceptedInputsRemovePersonID.push_back(tptr->getID());
+        }
+        for (Staff s : d->getStaffList())
+        {
+            Staff* sptr = getStaffById(s.getID()); 
+            acceptedInputsRemovePersonID.push_back(sptr->getID());
+        }
+
+        displayUserPrompt("Do you wish to: 1--Add or 2--Remove a person from this department: ");
+        getExpectedIntInput(&addRemoveChangeChoice, { 1, 2, 3 }, "Invalid option. Please choose to either add or remove a person (1 or 2):  ");
+        switch (addRemoveChangeChoice)
+        {
+            case 1: // Choose a teacher | If teacher already in dept. return to menu | If not add to dept
+                displayAllTeachers();
+                displayAllStaff();
+                displayUserPrompt("Please type the ID of the person you wish to add: ");
+                getExpectedIntInput(&personIDChoice, everyPersonID, "This person doesn't exist. Please type a valid ID: ");
+                if (getTeacherById(personIDChoice) != nullptr)
+                {
+                    for (Teacher t : d->getTeacherList())
+                    {
+                        if (t.getID() == personIDChoice)
+                        {
+                            cout << "This teacher is already in the department.\nReturn to menu.\n";
+                            break;
+                        }
+                    }
+                    d->addTeacher(*getTeacherById(personIDChoice));
+                    cout << "\n\nModification complete.\nReturn to menu.\n";
+                    break;
+                }
+                else 
+                {
+                    for (Staff s : d->getStaffList())
+                    {
+                        if (s.getID() == personIDChoice)
+                        {
+                            cout << "This staff member is already in the department.\nReturn to menu.\n";
+                            break;
+                        }
+                    }
+                    d->addStaff(*getStaffById(personIDChoice));
+                    cout << "\n\nModification complete.\nReturn to menu.\n";
+                    break;
+                }
+
+            case 2: // Choose a teacher | If teacher isnt in dept return to menu | If he is, remove
+                displayUserPrompt("Please type the ID of the person you wish to remove: ");
+                cin >> personIDChoice;
+
+                if (getTeacherById(personIDChoice) != nullptr) cout << d->removeTeacher(*getTeacherById(personIDChoice));
+                else if (getTeacherById(personIDChoice) != nullptr) d->removeStaff(*getStaffById(personIDChoice));
+                else
+                {
+                    cout << "This person is not in this department.\nReturn to menu.\n";
+                    break;
+                }
+                cout << "\n\nModification complete.\nReturn to menu.\n";
+                break;
+
+            case 3: // Choose a new teacher to be the dean. Teacher has to be in the department already
+                cout << "\nCurrent dean: " << d->getDean().getName() << "(ID: " << d->getDean().getID() << ")\n\n";
+                displayUserPrompt("Please type the ID of the teacher you wish to promote as dean: ");
+                getExpectedIntInput(&personIDChoice, acceptedInputsTeachersID, "Teacher is not in department and can therefore not be promoted to dean. Choose valid ID: ");
+                d->setDean(*getTeacherById(personIDChoice));
+
+                cout << "\n\nModification complete.\nReturn to menu.\n";
+                break;
+        }
+
+        system("pause");
+        menuState = MAIN_MENU;
+    }
+
+
 }
 
 void createPerson()
@@ -643,12 +777,12 @@ void createPerson()
             }
             if (hoursWorked == 32)
             {
-                FullTime t(name, age, speciality, degree);
+                Teacher* t = new FullTime (name, age, speciality, degree);
                 teacherInstancesVector.push_back(t);
             }
             else
             {
-                PartTime t(name, age, speciality, degree, hoursWorked);
+                Teacher* t = new PartTime(name, age, speciality, degree, hoursWorked);
                 teacherInstancesVector.push_back(t);
             }
         }
@@ -670,7 +804,7 @@ void createPerson()
             displayUserPrompt("\nNow please type the staff person's workload: ");
             getExpectedIntInput(&workload, { -1, 3, 32 }, "Accepted workload ranges from 3-32 Hours/Week: ");
 
-            Staff s(name, age, duty, workload);
+            Staff* s = new Staff(name, age, duty, workload);
             staffInstancesVector.push_back(s);
         }
     cout << "\nPerson created successfully. \n\n";
@@ -682,13 +816,13 @@ void deletePerson()
 {
     int personID = -1;
     vector<int> acceptedInputsPersonID = {};
-    for (Teacher t : teacherInstancesVector)
+    for (Teacher* t : teacherInstancesVector)
     {
-        acceptedInputsPersonID.push_back(t.getID());
+        acceptedInputsPersonID.push_back(t->getID());
     }
-    for (Staff s : staffInstancesVector)
+    for (Staff* s : staffInstancesVector)
     {
-        acceptedInputsPersonID.push_back(s.getID());
+        acceptedInputsPersonID.push_back(s->getID());
     }
 
     displayPageTitle("Delete Person");
@@ -707,7 +841,7 @@ void deletePerson()
         getExpectedIntInput(&personID, acceptedInputsPersonID, "Invalid input. Please type a valid ID: ");
         for (int i = 0; i < teacherInstancesVector.size(); i++)
         {
-            if (teacherInstancesVector[i].getID() == personID)
+            if (teacherInstancesVector[i]->getID() == personID)
             {
                 teacherInstancesVector.erase(teacherInstancesVector.begin()+i);
                 acceptedInputsPersonID.clear();
@@ -715,7 +849,7 @@ void deletePerson()
         }
         for (int i = 0; i < staffInstancesVector.size(); i++)
         {
-            if (staffInstancesVector[i].getID() == personID)
+            if (staffInstancesVector[i]->getID() == personID)
             {
                 staffInstancesVector.erase(staffInstancesVector.begin() + i);
                 acceptedInputsPersonID.clear();
@@ -743,15 +877,15 @@ void modifyPerson()
     Staff* modifiedStaff;
 
     vector<int> acceptedInputsTeacherID = {};
-    for (Teacher t : teacherInstancesVector)
+    for (Teacher* t : teacherInstancesVector)
     {
-        acceptedInputsTeacherID.push_back(t.getID());
+        acceptedInputsTeacherID.push_back(t->getID());
     }
 
     vector<int> acceptedInputsStaffID = {};
-    for (Staff s : staffInstancesVector)
+    for (Staff* s : staffInstancesVector)
     {
-        acceptedInputsStaffID.push_back(s.getID());
+        acceptedInputsStaffID.push_back(s->getID());
     }
 
     displayPageTitle("Modify Person");
@@ -880,22 +1014,35 @@ void payrolls()
 {
 
     int i = 1;
-    int j = 1;
+    int j;
 
     displayPageTitle("Payroll");
-    for (Department d : departmentInstancesVector)
+    for (Department* d : departmentInstancesVector)
     {
-        cout << i << ". " << d.getName() << endl;
+        cout << i << ". " << d->getName() << endl;
         cout << "       Teachers:" << endl;
-        vector<Teacher> deptTeacherVector = d.getTeacherList();
-        for (int k = 0; k < deptTeacherVector.size(); k++)
+        vector<Teacher> deptTeacherVector = d->getTeacherList();
+        j = 1;
+        for (Teacher t : d->getTeacherList())
         {
-            Teacher* t = &d.getTeacherList()[k];
-            cout << "       " << j << ". " << t->getName() << ": " << setprecision(2) << t->ComputePayRoll() << "$ CAD." << endl;
+            Teacher* tptr = getTeacherById(t.getID());
+            cout << "           " << j << ". " << tptr->getName() << ": " << fixed << setprecision(2) << tptr->ComputePayRoll() << "$ CAD." << endl;
+            j++;
+        }
+        cout << "       Staff:" << endl;
+        vector<Staff> deptStaffVector = d->getStaffList();
+        j = 1;
+        for (Staff s : d->getStaffList())
+        {
+            Staff* sptr = getStaffById(s.getID());
+            cout << "           " << j << ". " << sptr->getName() << ": " << fixed << setprecision(2) << sptr->ComputePayRoll() << "$ CAD." << endl;
             j++;
         }
         i++;
-    }
+    } 
+    cout << "\n\nReturn to menu.\n";
+    system("pause");
+    menuState = MAIN_MENU;
 }
 
 void settingsMenu()
