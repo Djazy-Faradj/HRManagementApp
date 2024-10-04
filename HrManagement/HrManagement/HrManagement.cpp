@@ -25,6 +25,7 @@ enum MENU_STATE {
     PERSON_CREATE,
     PERSON_DELETE,
     PERSON_MODIFY,
+    VIEW_DEPARTMENTS,
     PAYROLLS,
     SETTINGS,
     CLOSE
@@ -409,28 +410,51 @@ void displayListDepartments()
     }
     cout << endl << endl << "*********************************************\n";
 }
-void displayAllTeachers()
+void displayAllTeachers(bool showPayroll = false)
 {
-    cout <<  "\n\n*******************TEACHER******************\n\n";
+    cout <<  "\n*******************TEACHER******************\n\n";
     int i = 1;
     if (teacherInstancesVector.size() == 0) cout << "[Currently empty]\n";
-    for (Teacher* t : teacherInstancesVector)
+    if (showPayroll)
     {
-        if (t->getType() == "full-time") cout << i << ". " << t->getName() << "(ID: " << t->getID() << ") | Age: " << t->getAge() << " | Category: " << t->getCategory() << " | Speciality: " << t->getSpeciality() << " | Degree: " << t->getDegree() << " | Status: full-time" << endl;
-        else cout << i << ". " << t->getName() << "(ID: " << t->getID() << ") | Age: " << t->getAge() << " | Category: " << t->getCategory() << " | Speciality: " << t->getSpeciality() << " | Degree: " << t->getDegree() << " | Status: " << t->getType() << " | Hours worked: " << t->getHoursWorked() << endl;
-        i++;
+        for (Teacher* t : teacherInstancesVector)
+        {
+            if (t->getType() == "full-time") cout << i << ". " << t->getName() << " | Speciality : " << t->getSpeciality() << " | Degree : " << t->getDegree() << " | Status : full - time(32 hours / week) | Payroll: " << fixed << setprecision(2) << t->ComputePayRoll() << "$ CAD." << endl;
+            else cout << i << ". " << t->getName()  << " | Speciality: " << t->getSpeciality() << " | Degree: " << t->getDegree() << " | Status: " << t->getType() << " | Hours worked: " << t->getHoursWorked() << " | Payroll: " << fixed << setprecision(2) << t->ComputePayRoll() << "$ CAD." << endl;
+            i++;
+        }
+    }
+    else
+    {
+        for (Teacher* t : teacherInstancesVector)
+        {
+            if (t->getType() == "full-time") cout << i << ". " << t->getName() << "(ID: " << t->getID() << ") | Age: " << t->getAge() << " | Speciality: " << t->getSpeciality() << " | Degree: " << t->getDegree() << " | Status: full-time (32 hours/week)" << endl;
+            else cout << i << ". " << t->getName() << "(ID: " << t->getID() << ") | Age: " << t->getAge() << " | Speciality: " << t->getSpeciality() << " | Degree: " << t->getDegree() << " | Status: " << t->getType() << " | Hours worked: " << t->getHoursWorked() << endl;
+            i++;
+        }
     }
     //cout << "\n";
 }
-void displayAllStaff()
+void displayAllStaff(bool showPayroll = false)
 {
     cout << "\n********************STAFF*******************\n\n";
     int i = 1;
     if (staffInstancesVector.size() == 0) cout << "[Currently empty]\n";
-    for (Staff* s : staffInstancesVector)
+    if (showPayroll)
     {
-        cout << i << ". " << s->getName() << "(ID: " << s->getID() << ") | Age: " << s->getAge() << " | Category: " << s->getCategory() << " | Duty: " << s->getDuty() << " | Workload: " << s->getWorkload() << endl;
-        i++;
+        for (Staff* s : staffInstancesVector)
+        {
+            cout << i << ". " << s->getName() << " | Age: " << s->getAge() << " | Duty: " << s->getDuty() << " | Workload: " << s->getWorkload() << " | Payroll: " << fixed << setprecision(2) << s->ComputePayRoll() << "$ CAD." << endl;
+            i++;
+        }
+    }
+    else
+    {
+        for (Staff* s : staffInstancesVector)
+        {
+            cout << i << ". " << s->getName() << "(ID: " << s->getID() << ") | Age: " << s->getAge() << " | Category: " << s->getCategory() << " | Duty: " << s->getDuty() << " | Workload: " << s->getWorkload() << endl;
+            i++;
+        }
     }
     //cout << "\n";
 }
@@ -456,15 +480,15 @@ void mainMenu()
     int choice = -1;
     displayPageTitle("Main Menu");
     // Menu options
-    cout << "1--Create Department          4--Create Person          7--View Payrolls" << endl;
-    cout << "2--Delete Department          5--Delete Person" << endl;
+    cout << "1--Create Department          4--Create Person          7--View Departments" << endl;
+    cout << "2--Delete Department          5--Delete Person          8--Payrolls" << endl;
     cout << "3--Modify Department          6--Modify Person" << endl;
-    cout << "\n8--Settings" << endl;
-    cout << "9--Exit" << endl;
+    cout << "\n9--Settings" << endl;
+    cout << "10--Exit" << endl;
     cout << endl << "*********************************************";
     cout << endl << endl;
     cout << "Please type your desired action: ";
-    getExpectedIntInput(&choice, { -1, 1, 9 }, "Invalid option. Please type a valid menu option: ");
+    getExpectedIntInput(&choice, { -1, 1, 10 }, "Invalid option. Please type a valid menu option: ");
 
     switch (choice)
     {
@@ -487,12 +511,15 @@ void mainMenu()
         menuState = PERSON_MODIFY;
         break;
     case 7:
-        menuState = PAYROLLS;
+        menuState = VIEW_DEPARTMENTS;
         break;
     case 8:
-        menuState = SETTINGS;
+        menuState = PAYROLLS;
         break;
     case 9:
+        menuState = SETTINGS;
+        break;
+    case 10:
         menuState = CLOSE;
         break;
     default:
@@ -1026,13 +1053,13 @@ void modifyPerson()
 
 }
 
-void payrolls()
+void viewDepartments()
 {
-
+    float totalPayroll = 0;
     int i = 1;
     int j;
 
-    displayPageTitle("Payroll");
+    displayPageTitle("Departments");
     for (Department* d : departmentInstancesVector)
     {
         cout << i << ". " << d->getName() << endl;
@@ -1042,7 +1069,7 @@ void payrolls()
         for (Teacher t : d->getTeacherList())
         {
             Teacher* tptr = getTeacherById(t.getID());
-            cout << "           " << j << ". " << tptr->getName() << ": " << fixed << setprecision(2) << tptr->ComputePayRoll() << "$ CAD." << endl;
+            cout << "           " << j << ". " << tptr->getName() << endl;
             j++;
         }
         cout << "       Staff:" << endl;
@@ -1051,11 +1078,37 @@ void payrolls()
         for (Staff s : d->getStaffList())
         {
             Staff* sptr = getStaffById(s.getID());
-            cout << "           " << j << ". " << sptr->getName() << ": " << fixed << setprecision(2) << sptr->ComputePayRoll() << "$ CAD." << endl;
+            cout << "           " << j << ". " << sptr->getName() << endl;
             j++;
         }
         i++;
-    } 
+    }
+
+    cout << "\nCollege employees average age: " << getPersonnelAvgAge() << " years old.";
+    cout << "\n\nReturn to menu.\n";
+    system("pause");
+    menuState = MAIN_MENU;
+
+}
+
+void payrolls()
+{
+    float totalPayroll = 0;
+
+    displayPageTitle("Payrolls");
+    displayAllTeachers(true);
+    displayAllStaff(true);
+
+    for (Teacher* t : teacherInstancesVector)
+    {
+        totalPayroll += t->ComputePayRoll();
+    }
+    for (Staff* s : staffInstancesVector)
+    {
+        totalPayroll += s->ComputePayRoll();
+    }
+
+    cout << "\nTotal payrolls (Includes the payrolls of employees not assigned to any departments): " << fixed << setprecision(2) << totalPayroll << "$ CAD.";
     cout << "\n\nReturn to menu.\n";
     system("pause");
     menuState = MAIN_MENU;
@@ -1114,6 +1167,9 @@ int main()
                 break;
             case PERSON_MODIFY:
                 modifyPerson();
+                break;
+            case VIEW_DEPARTMENTS:
+                viewDepartments();
                 break;
             case PAYROLLS:
                 payrolls();
