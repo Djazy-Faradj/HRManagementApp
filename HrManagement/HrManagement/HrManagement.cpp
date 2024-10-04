@@ -193,8 +193,14 @@ struct Department{ // Department class declaration
         void setName(string n) { name = n; }
         void setDean(Teacher t)
         {
-            dean = t;
-            teacherList.emplace(teacherList.begin(), t);  // The dean is ALWAYS the first element in the department teacher list
+            if (t.getID() != dean.getID())
+            {
+                dean = t;
+                if (teacherList.size() == 0)
+                {
+                    teacherList.push_back(t);
+                }
+            }
         }
         void setTeacherList(vector<Teacher> tl) { teacherList = tl; }
         void setStaffList(vector<Staff> sl) { staffList = sl; }
@@ -522,7 +528,7 @@ void createDepartment()
 
             if (upperName == upperDeptName) // Same name dept. already exists, prompt for a new name
             {
-                cout << "Department already exists\n";
+                cout << "\nDepartment already exists\n";
                 name = "";
             }
         }
@@ -602,6 +608,8 @@ void modifyDepartment()
     vector<int> acceptedInputsTeachersID = {};
     int personIDChoice = -1;
     int newDeanID = -1;
+    string deptNewName;
+    string completionMessage = "";
 
 
     displayPageTitle("Modify Department");
@@ -651,8 +659,8 @@ void modifyDepartment()
             acceptedInputsRemovePersonID.push_back(sptr->getID());
         }
 
-        displayUserPrompt("Do you wish to: 1--Add or 2--Remove a person from this department: ");
-        getExpectedIntInput(&addRemoveChangeChoice, { 1, 2, 3 }, "Invalid option. Please choose to either add or remove a person (1 or 2):  ");
+        displayUserPrompt("Do you wish to:\n1--Add employee          2--Remove employee\n3--Change dean           4--Change name\n\nPlease type desired action: ");
+        getExpectedIntInput(&addRemoveChangeChoice, { 1, 2, 3, 4 }, "Invalid option. Please choose to either add or remove a person (1 or 2):  ");
         switch (addRemoveChangeChoice)
         {
             case 1: // Choose a teacher | If teacher already in dept. return to menu | If not add to dept
@@ -662,30 +670,30 @@ void modifyDepartment()
                 getExpectedIntInput(&personIDChoice, everyPersonID, "This person doesn't exist. Please type a valid ID: ");
                 if (getTeacherById(personIDChoice) != nullptr)
                 {
+                    completionMessage = "\n\nDepartment modified successfully!";
                     for (Teacher t : d->getTeacherList())
                     {
                         if (t.getID() == personIDChoice)
                         {
-                            cout << "This teacher is already in the department.\nReturn to menu.\n";
+                            completionMessage = "\n\nThis teacher is already in this department.";
                             break;
                         }
                     }
                     d->addTeacher(*getTeacherById(personIDChoice));
-                    cout << "\n\nModification complete.\nReturn to menu.\n";
                     break;
                 }
                 else 
                 {
+                    completionMessage = "\n\nDepartment modified successfully!";
                     for (Staff s : d->getStaffList())
                     {
                         if (s.getID() == personIDChoice)
                         {
-                            cout << "This staff member is already in the department.\nReturn to menu.\n";
+                            completionMessage = "\n\nThis staff member is already in the department.";
                             break;
                         }
                     }
                     d->addStaff(*getStaffById(personIDChoice));
-                    cout << "\n\nModification complete.\nReturn to menu.\n";
                     break;
                 }
 
@@ -693,26 +701,35 @@ void modifyDepartment()
                 displayUserPrompt("Please type the ID of the person you wish to remove: ");
                 cin >> personIDChoice;
 
-                if (getTeacherById(personIDChoice) != nullptr) cout << d->removeTeacher(*getTeacherById(personIDChoice));
-                else if (getTeacherById(personIDChoice) != nullptr) d->removeStaff(*getStaffById(personIDChoice));
+                completionMessage = "\n\nDepartment modified successfully!";
+                if (getTeacherById(personIDChoice) != nullptr) d->removeTeacher(*getTeacherById(personIDChoice));
+                else if (getStaffById(personIDChoice) != nullptr) d->removeStaff(*getStaffById(personIDChoice));
                 else
                 {
-                    cout << "This person is not in this department.\nReturn to menu.\n";
+                    completionMessage = "\nThis person is not in this department.";
                     break;
                 }
-                cout << "\n\nModification complete.\nReturn to menu.\n";
                 break;
 
             case 3: // Choose a new teacher to be the dean. Teacher has to be in the department already
                 cout << "\nCurrent dean: " << d->getDean().getName() << "(ID: " << d->getDean().getID() << ")\n\n";
                 displayUserPrompt("Please type the ID of the teacher you wish to promote as dean: ");
-                getExpectedIntInput(&personIDChoice, acceptedInputsTeachersID, "Teacher is not in department and can therefore not be promoted to dean. Choose valid ID: ");
+                getExpectedIntInput(&personIDChoice, acceptedInputsTeachersID, "Cannot find a teacher corresponding to this ID. Please type valid ID: ");
                 d->setDean(*getTeacherById(personIDChoice));
 
-                cout << "\n\nModification complete.\nReturn to menu.\n";
+                completionMessage = "\n\nDepartment modified successfully!";
+                break;
+
+            case 4: // Change department name
+                cout << "\nCurrent name: " << d->getName() << "\n\n";
+                displayUserPrompt("Please type a new name for this department: ");
+                getline(cin, deptNewName);
+                d->setName(deptNewName);
+                completionMessage = "\n\nDepartment modified successfully!";
                 break;
         }
 
+        cout << completionMessage << "\nReturn to menu.\n";
         system("pause");
         menuState = MAIN_MENU;
     }
@@ -1064,9 +1081,9 @@ void closeApp()
     //,.
 
 
-    cout << "Thank you for using HR Management\n";
+    cout << "Thank you for using HR Management\n\n";
 
-    cin.ignore();
+    system("pause");
     run = false;
 }
 
