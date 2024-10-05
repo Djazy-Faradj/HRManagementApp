@@ -474,6 +474,22 @@ void displayDepartmentListStaff(Department d)
     }
 }
 
+string saveData()
+{
+    return "Data saved.";
+}
+
+string loadData()
+{
+    string data = 
+    return "Loaded data.";
+}
+
+string clearData()
+{
+    return "Cleared data.";
+}
+
 void mainMenu()
 {
 
@@ -1108,7 +1124,7 @@ void payrolls()
         totalPayroll += s->ComputePayRoll();
     }
 
-    cout << "\nTotal payrolls (Includes the payrolls of employees not assigned to any departments): " << fixed << setprecision(2) << totalPayroll << "$ CAD.";
+    cout << "\nTotal payrolls: " << fixed << setprecision(2) << totalPayroll << "$ CAD.";
     cout << "\n\nReturn to menu.\n";
     system("pause");
     menuState = MAIN_MENU;
@@ -1116,14 +1132,42 @@ void payrolls()
 
 void settingsMenu()
 {
+    int choice = -1;
+    int confirmClear = -1;
+    MENU_STATE nextMenuState = MAIN_MENU;
+
     system("CLS");
     drawAppTitle();
-    int choice;
-    cout << "\n\n--Settings--" << endl;
+    displayPageTitle("Settings");
     // Settings options
-    cout << endl << "*********************************************";
-    cout << endl << endl;
-    cout << "Please type your desired action: ";
+    cout << "1--Save data" << endl;
+    cout << "2--Clear data" << endl;
+    cout << "3--Return to main menu" << endl;
+    displayUserPrompt("Please type your desired action. ");
+    getExpectedIntInput(&choice, { 1, 2, 3 }, "Not a valid option. (1 - 3): ");
+    switch (choice)
+    {
+    case 1:
+        cout << saveData();
+        break;
+    case 2:
+        displayUserPrompt("Are you sure you want to permanently delete the data files? (1-yes / 2-no): ");
+        getExpectedIntInput(&confirmClear, { 1, 2 }, "Please choose a valid option. ");
+        switch (confirmClear)
+        {
+        case 1:
+            cout << clearData();
+            break;
+        case 2:
+            nextMenuState = SETTINGS;
+            cout << "Data file deletion aborted. ";
+            break;
+        }
+    case 3:
+        break;
+    }
+    system("pause");
+    menuState = nextMenuState;
 }
 
 void closeApp()
