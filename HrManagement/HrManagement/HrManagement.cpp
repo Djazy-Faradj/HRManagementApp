@@ -569,31 +569,24 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
             {
                 personOrDepartment = false;
                 j = i;
+                currentDataRead = "";
             }
             else if (dataString[i] == '{' && personNextID == "1") personNextID = dataString.substr(0, i);
             else if (dataString[i] == '|') // End of instance data, repeat process for next instance
             {
                 personsData.push_back(customSplit(currentDataRead, ';'));
                 currentDataRead = "";
-                i++;
             }
             else if (personNextID != "1") // Reads Persons data
                 currentDataRead += dataString[i]; // Store the instances info into a string in which we will then split using the separator for each info
             break;
         case false:
-            if (dataString[i - 1] == '}')
-            {
-                personOrDepartment = true;
-            }
-            else if (dataString[i] == '{' && departmentNextID == "1")
-            {
-                departmentNextID = dataString.substr(j, i-j);
-            }
+            if (dataString[i] == '{' && departmentNextID == "1") departmentNextID = dataString.substr(j, i-j);
             else if (dataString[i] == '|') // End of instance data, repeat process for next instance
             {
                 departmentsData.push_back(customSplit(currentDataRead, ';'));
+                cout << currentDataRead << endl;
                 currentDataRead = "";
-                i++;
             }
             else if (departmentNextID != "1") // Reads Persons data
                 currentDataRead += dataString[i]; // Store the instances info into a string in which we will then split using the separator for each info
@@ -608,7 +601,6 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
     {
         if (personData[0] == "Teacher")
         {
-            cout << personData[0] << endl;
             if (personData[1] == "part-time")
             {
                 Teacher* t = new PartTime(personData[3], stoi(personData[4]), personData[5], personData[6], stoi(personData[7]));
@@ -624,7 +616,6 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
         }
         else if (personData[0] == "Staff")// Staff person
         {
-            cout << personData[0] << endl;
             Staff* s = new Staff(personData[2], stoi(personData[3]), personData[4], stoi(personData[5]));
             s->setID(stoi(personData[1]));
             staffInstancesVector.push_back(s);
@@ -643,7 +634,7 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
         departmentStaffIDs.pop_back();
         for (string staffID : departmentStaffIDs) d->addStaff(*getStaffById(stoi(staffID)));
         // Loop through the teacher IDs and add them to the department that was created
-        departmentTeacherIDs = customSplit(departmentData[3].substr(1, departmentData[3].length() - 2), ',');
+        departmentTeacherIDs = customSplit(departmentData[4].substr(1, departmentData[4].length() - 2), ',');
         departmentTeacherIDs.pop_back();
         for (string teacherID : departmentTeacherIDs) d->addTeacher(*getTeacherById(stoi(teacherID)));
 
@@ -676,7 +667,7 @@ void mainMenu()
     cout << "3--Modify Department          6--Modify Person" << endl;
     cout << "\n9--Settings" << endl;
     cout << "10--Exit" << endl;
-    cout << endl << "*********************************************" << endl << endl;
+    cout << endl << "*********************************************" << endl;
     cout << endl << "Please type your desired action: ";
     getExpectedIntInput(&choice, { -1, 1, 10 }, "Invalid option. Please type a valid menu option: ");
 
