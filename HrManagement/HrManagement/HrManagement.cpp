@@ -2,6 +2,7 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -39,11 +40,11 @@ struct Person { // Person class declaration
         string name;
     protected:
         int id;
-        static int nextID;
         string category;
 
         virtual void SetCategory() { category = "Person"; }
     public:
+        static int nextID; // Is public to be accessible by saveData();
         static vector<int> personnelAgeVector;
         static vector<int> teacherInstancesIDVector;
         static vector<int> staffInstancesIDVector;
@@ -177,13 +178,13 @@ vector<Staff*> staffInstancesVector = {};
 struct Department{ // Department class declaration
     private:
         int id;
-        static int nextID;
         string name;
         Teacher dean;
         vector<Teacher> teacherList;
         vector<Staff> staffList;
 
     public:
+        static int nextID;
 
         // SETTERS
         void setID(int i)
@@ -285,14 +286,6 @@ int getPersonnelAvgAge()
 void drawAppTitle()
 {
     cout << "*************** HR MANAGEMENT ***************";
-}
-
-int Init() // Get called at the start of the program, will either create a data file or read it and load the state
-{
-    // Read from data file
-    // load state
-
-    return 0;
 }
 
 void getExpectedIntInput(int* var, vector<int> expectedInputs, string errorMessage)
@@ -474,20 +467,197 @@ void displayDepartmentListStaff(Department d)
     }
 }
 
-string saveData()
-{
-    return "Data saved.";
+// Create custom split() function.  
+vector<string> customSplit(string str, char separator) {
+    vector<string> strings;
+    int startIndex = 0, endIndex = 0;
+    for (int i = 0; i <= str.size(); i++) {
+
+        // If we reached the end of the word or the end of the input.
+        if (str[i] == separator || i == str.size()) {
+            endIndex = i;
+            string temp;
+            temp.append(str, startIndex, endIndex - startIndex);
+            strings.push_back(temp);
+            startIndex = endIndex + 1;
+        }
+    }
+    return strings;
 }
 
-string loadData()
-{
-    string data = 
-    return "Loaded data.";
-}
 
+string saveData() //nextID{category(teacher);type(part-time);id;Name;age;Speciality;Degree;Hoursworked|category(teacher);type(full-time);id;name;age;speciality;degree|category(staff);id;name;age;duty;workload|}nextID{id;name;deanid;[staff_ids];[teacher_ids]|}
+{
+    string dataString = ""; 
+    
+    //Teachers
+    dataString += to_string(Person::nextID) + "{";
+    for (Teacher* t : teacherInstancesVector)
+    {
+        if(t->getType() == "part-time")
+        {
+            dataString += t->getCategory() + ";part-time;" + to_string(t->getID()) + ";" + t->getName() + ";" + to_string(t->getAge()) + ";" + t->getSpeciality() + ";" + t->getDegree() + ";" + to_string(t->getHoursWorked()) + "|";
+        }
+        else
+        {
+            dataString += t->getCategory() + ";full-time;" + to_string(t->getID()) + ";" + t->getName() + ";" + to_string(t->getAge()) + ";" + t->getSpeciality() + ";" + t->getDegree() + "|";
+        }
+    }
+
+    //Staffs
+    for (Staff* s : staffInstancesVector)
+    {
+        dataString += s->getCategory() + ";" + to_string(s->getID()) + ";" + s->getName() + ";" + to_string(s->getAge()) + ";" + s->getDuty() + ";" + to_string(s->getWorkload()) + "|";
+    }
+    dataString += "}";
+
+    //Departments
+    dataString += to_string(Department::nextID) + "{";
+    for (Department* d : departmentInstancesVector)
+    {
+        string deptTeacherIDVector = "";
+        string deptStaffIDVector = "";
+
+        for (Teacher t : d->getTeacherList())
+        {
+            deptTeacherIDVector += to_string(t.getID()) + ",";
+        }
+        for (Staff s : d->getStaffList())
+        {
+            deptStaffIDVector += to_string(s.getID()) + ",";
+        }
+        dataString += d->getID() + ";" + d->getName() + ";" + to_string(d->getDean().getID()) + ";[" + deptStaffIDVector + "];[" + deptTeacherIDVector + "]|";
+    }
+    dataString += "}";
+
+    ofstream dataFile("data.txt"); // Creates a file to write into
+    dataFile << dataString; // Outputs the data saved into the data file
+    dataFile.close(); // Closes dataFile
+
+    return "Data saved.\n"; // Display status of operation
+}
+string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Speciality;Degree;Hoursworked|category(teacher);type(full-time);id;name;age;speciality;degree|category(staff);id;name;age;duty;workload|}nextID{id;name;deanid;[staff_ids];[teacher_ids]|}
+{
+    Person::personnelAgeVector.clear();
+    departmentInstancesVector.clear();
+    teacherInstancesVector.clear();
+    staffInstancesVector.clear();
+    string dataString;
+    string currentDataRead = "";
+    bool personOrDepartment = true; // true = read for person data ; false = read for department data
+    int j;
+
+    string personNextID = "1";
+    vector<vector<string>> personsData;
+
+    string departmentNextID = "1";
+    vector<vector<string>> departmentsData;
+
+
+    ifstream dataFile("data.txt"); // Read from this text file
+    while (getline(dataFile, dataString)); // Store the text from dataFile to dataString
+    {
+    }
+    dataFile.close(); // Close dataFile
+
+    for (int i = 0; i < dataString.length(); i++)
+    {
+        switch(personOrDepartment)
+        {
+        case true:
+            if (i != 0 && dataString[i - 1] == '}') 
+            {
+                personOrDepartment = false;
+                j = i;
+            }
+            else if (dataString[i] == '{' && personNextID == "1") personNextID = dataString.substr(0, i);
+            else if (dataString[i] == '|') // End of instance data, repeat process for next instance
+            {
+                personsData.push_back(customSplit(currentDataRead, ';'));
+                currentDataRead = "";
+                i++;
+            }
+            else if (personNextID != "1") // Reads Persons data
+                currentDataRead += dataString[i]; // Store the instances info into a string in which we will then split using the separator for each info
+            break;
+        case false:
+            if (dataString[i - 1] == '}')
+            {
+                personOrDepartment = true;
+            }
+            else if (dataString[i] == '{' && departmentNextID == "1")
+            {
+                departmentNextID = dataString.substr(j, i-j-1);
+            }
+            else if (dataString[i] == '|') // End of instance data, repeat process for next instance
+            {
+                departmentsData.push_back(customSplit(currentDataRead, ';'));
+                currentDataRead = "";
+                i++;
+            }
+            else if (departmentNextID != "1") // Reads Persons data
+                currentDataRead += dataString[i]; // Store the instances info into a string in which we will then split using the separator for each info
+            break;
+        }
+
+    }
+
+    // Create state of the loaded data
+    Person::nextID = stoi(personNextID);
+    for (vector<string> personData : personsData)
+    {
+        if (personData[0] == "Teacher")
+        {
+            if (personData[1] == "part-time")
+            {
+                Teacher* t = new PartTime(personData[3], stoi(personData[4]), personData[5], personData[6], stoi(personData[7]));
+                t->setID(stoi(personData[2]));
+                teacherInstancesVector.push_back(t);
+            }
+            else // full-time
+            {
+                Teacher* t = new FullTime(personData[3], stoi(personData[4]), personData[5], personData[6]);
+                t->setID(stoi(personData[2]));
+                teacherInstancesVector.push_back(t);
+            }
+        }
+        else // Staff person
+        {
+            Staff* s = new Staff(personData[2], stoi(personData[3]), personData[4], stoi(personData[5]));
+            s->setID(stoi(personData[1]));
+            staffInstancesVector.push_back(s);
+        }
+    }
+    // Create state of the loaded data
+    Department::nextID = stoi(departmentNextID);
+    for (vector<string> departmentData : departmentsData)
+    {
+        vector<string> departmentStaffIDs;
+        vector<string> departmentTeacherIDs;
+        Department* d = new Department(departmentData[1], *getTeacherById(stoi(departmentData[2])));
+        d->setID(stoi(departmentData[0]));
+        // Loop through the staff IDs and add them to the department that was created
+        departmentStaffIDs = customSplit(departmentData[3].substr(1, departmentData[3].length()-2), ',');
+        for (string staffID : departmentStaffIDs) d->addStaff(*getStaffById(stoi(staffID)));
+        // Loop through the teacher IDs and add them to the department that was created
+        departmentTeacherIDs = customSplit(departmentData[3].substr(1, departmentData[3].length() - 2), ',');
+        for (string teacherID : departmentTeacherIDs) d->addTeacher(*getTeacherById(stoi(teacherID)));
+
+        departmentInstancesVector.push_back(d);
+    }
+
+    return "Loaded data.\n"; // Display status of operation
+}
 string clearData()
 {
-    return "Cleared data.";
+    if (remove("data.txt") != 0) return "Error deleting data file."; // Tries to delete data file, returns error if it fails
+    else return "Cleared data.\n"; // Display status of operation
+}
+
+int Init() // Get called at the start of the program, will either create a data file or read it and load the state
+{
+    loadData();
+    return 0;
 }
 
 void mainMenu()
@@ -502,8 +672,7 @@ void mainMenu()
     cout << "\n9--Settings" << endl;
     cout << "10--Exit" << endl;
     cout << endl << "*********************************************";
-    cout << endl << endl;
-    cout << "Please type your desired action: ";
+    cout << endl << "Please type your desired action: ";
     getExpectedIntInput(&choice, { -1, 1, 10 }, "Invalid option. Please type a valid menu option: ");
 
     switch (choice)
@@ -1157,6 +1326,7 @@ void settingsMenu()
         {
         case 1:
             cout << clearData();
+            loadData();
             break;
         case 2:
             nextMenuState = SETTINGS;
@@ -1175,7 +1345,6 @@ void closeApp()
     system("CLS");
     // Write data file on modifications...
     //,.
-
 
     cout << "Thank you for using HR Management\n\n";
 
