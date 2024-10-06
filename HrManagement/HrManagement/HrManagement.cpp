@@ -585,7 +585,6 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
             else if (dataString[i] == '|') // End of instance data, repeat process for next instance
             {
                 departmentsData.push_back(customSplit(currentDataRead, ';'));
-                cout << currentDataRead << endl;
                 currentDataRead = "";
             }
             else if (departmentNextID != "1") // Reads Persons data
