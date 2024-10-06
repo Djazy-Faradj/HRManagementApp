@@ -1,1 +1,1 @@
-4{Teacher;full-time;1;Thomas;23;Math;Master|Teacher;part-time;2;Paul;23;English;Bachelor;23|Staff;3;Link;19;Floor cleaning;32|}3{Computer Science;1;[];[1,]|Math;2;[];[2,1,]|}
+19{Teacher;full-time;1;Thomas;23;Math;PhD|Staff;18;Link;23;Math;23|}1{}

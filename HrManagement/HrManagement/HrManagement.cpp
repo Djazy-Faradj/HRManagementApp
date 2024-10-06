@@ -526,7 +526,7 @@ string saveData() //nextID{category(teacher);type(part-time);id;Name;age;Special
         {
             deptStaffIDVector += to_string(s.getID()) + ",";
         }
-        dataString += d->getID() + ";" + d->getName() + ";" + to_string(d->getDean().getID()) + ";[" + deptStaffIDVector + "];[" + deptTeacherIDVector + "]|";
+        dataString += to_string(d->getID()) + ";" + d->getName() + ";" + to_string(d->getDean().getID()) + ";[" + deptStaffIDVector + "];[" + deptTeacherIDVector + "]|";
     }
     dataString += "}";
 
@@ -587,7 +587,7 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
             }
             else if (dataString[i] == '{' && departmentNextID == "1")
             {
-                departmentNextID = dataString.substr(j, i-j-1);
+                departmentNextID = dataString.substr(j, i-j);
             }
             else if (dataString[i] == '|') // End of instance data, repeat process for next instance
             {
@@ -608,6 +608,7 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
     {
         if (personData[0] == "Teacher")
         {
+            cout << personData[0] << endl;
             if (personData[1] == "part-time")
             {
                 Teacher* t = new PartTime(personData[3], stoi(personData[4]), personData[5], personData[6], stoi(personData[7]));
@@ -621,8 +622,9 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
                 teacherInstancesVector.push_back(t);
             }
         }
-        else // Staff person
+        else if (personData[0] == "Staff")// Staff person
         {
+            cout << personData[0] << endl;
             Staff* s = new Staff(personData[2], stoi(personData[3]), personData[4], stoi(personData[5]));
             s->setID(stoi(personData[1]));
             staffInstancesVector.push_back(s);
@@ -638,9 +640,11 @@ string loadData() //nextID{category(teacher);type(part-time);id;Name;age;Special
         d->setID(stoi(departmentData[0]));
         // Loop through the staff IDs and add them to the department that was created
         departmentStaffIDs = customSplit(departmentData[3].substr(1, departmentData[3].length()-2), ',');
+        departmentStaffIDs.pop_back();
         for (string staffID : departmentStaffIDs) d->addStaff(*getStaffById(stoi(staffID)));
         // Loop through the teacher IDs and add them to the department that was created
         departmentTeacherIDs = customSplit(departmentData[3].substr(1, departmentData[3].length() - 2), ',');
+        departmentTeacherIDs.pop_back();
         for (string teacherID : departmentTeacherIDs) d->addTeacher(*getTeacherById(stoi(teacherID)));
 
         departmentInstancesVector.push_back(d);
@@ -657,6 +661,7 @@ string clearData()
 int Init() // Get called at the start of the program, will either create a data file or read it and load the state
 {
     loadData();
+
     return 0;
 }
 
@@ -671,7 +676,7 @@ void mainMenu()
     cout << "3--Modify Department          6--Modify Person" << endl;
     cout << "\n9--Settings" << endl;
     cout << "10--Exit" << endl;
-    cout << endl << "*********************************************";
+    cout << endl << "*********************************************" << endl << endl;
     cout << endl << "Please type your desired action: ";
     getExpectedIntInput(&choice, { -1, 1, 10 }, "Invalid option. Please type a valid menu option: ");
 
@@ -769,6 +774,7 @@ void createDepartment()
             }
             if (!departmentCreated) cout << "ID provided does not match any existing teacher.\n";
         }
+        saveData(); // Saves data after creating department
         cout << "Department has been created successfully.\n";
         system("pause");
         menuState = MAIN_MENU;
@@ -798,6 +804,7 @@ void deleteDepartment()
             {
                 departmentInstancesVector.erase(departmentInstancesVector.begin() + i);
                 acceptedInputsDepartmentID.clear();
+                saveData(); // Saves data after deleting department
             }
         }
     }
@@ -939,7 +946,7 @@ void modifyDepartment()
                 completionMessage = "\n\nDepartment modified successfully!";
                 break;
         }
-
+        saveData(); // Saves modification applied
         cout << completionMessage << "\nReturn to menu.\n";
         system("pause");
         menuState = MAIN_MENU;
@@ -970,71 +977,72 @@ void createPerson()
     displayUserPrompt("Please indicate your desired category: ");
     getExpectedIntInput(&categoryChoice, { 1, 2 }, "Incorrect input, please type a correct category: ");
 
-        if (categoryChoice == 1)
-        {
-            system("CLS");
-            drawAppTitle();
-            cout << "\n\n--Create Person-TEACHER--\n" << endl;
-            // createPerson options
-            cout << "Please write the full name of the teacher.";
-            cout << endl << "\n*********************************************";
-            cout << endl << endl;
-            displayUserPrompt("Name: ");
-            getline(cin, name);
-            displayUserPrompt("\nNow please type the teacher's age: ");
-            getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
-            displayUserPrompt("\nNow please type the teacher's speciality (i.e. Math, English, etc.): ");
-            getline(cin, speciality);
-            cout << "\nNow please indicate the teacher's degree.\n1--Bachelor         2--Master         3--PhD\n";
-            displayUserPrompt("\nDegree: ");
-            getExpectedIntInput(&degreeChoice, { 1, 2, 3 }, "Incorrect input, please type a correct degree: ");
-            displayUserPrompt("\nNow please type the teacher's weekly work hours (32hrs/week will assign the teacher as full-time): ");
-            getExpectedIntInput(&hoursWorked, { -1, 3, 32 }, "Accepted work time ranges from 3-32 Hours/Week: ");
+    if (categoryChoice == 1)
+    {
+        system("CLS");
+        drawAppTitle();
+        cout << "\n\n--Create Person-TEACHER--\n" << endl;
+        // createPerson options
+        cout << "Please write the full name of the teacher.";
+        cout << endl << "\n*********************************************";
+        cout << endl << endl;
+        displayUserPrompt("Name: ");
+        getline(cin, name);
+        displayUserPrompt("\nNow please type the teacher's age: ");
+        getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
+        displayUserPrompt("\nNow please type the teacher's speciality (i.e. Math, English, etc.): ");
+        getline(cin, speciality);
+        cout << "\nNow please indicate the teacher's degree.\n1--Bachelor         2--Master         3--PhD\n";
+        displayUserPrompt("\nDegree: ");
+        getExpectedIntInput(&degreeChoice, { 1, 2, 3 }, "Incorrect input, please type a correct degree: ");
+        displayUserPrompt("\nNow please type the teacher's weekly work hours (32hrs/week will assign the teacher as full-time): ");
+        getExpectedIntInput(&hoursWorked, { -1, 3, 32 }, "Accepted work time ranges from 3-32 Hours/Week: ");
 
-            switch (degreeChoice)
-            {
-            case 2:
-                degree = "Master";
-                break;
-            case 3:
-                degree = "PhD";
-                break;
-            default:
-                degree = "Bachelor";
-                break;
-            }
-            if (hoursWorked == 32)
-            {
-                Teacher* t = new FullTime (name, age, speciality, degree);
-                teacherInstancesVector.push_back(t);
-            }
-            else
-            {
-                Teacher* t = new PartTime(name, age, speciality, degree, hoursWorked);
-                teacherInstancesVector.push_back(t);
-            }
-        }
-        else if (categoryChoice == 2)
+        switch (degreeChoice)
         {
-            system("CLS");
-            drawAppTitle();
-            cout << "\n\n--Create Person-STAFF--\n" << endl;
-            // createPerson options
-            displayUserPrompt("Please write the full name of the staff person.");
-            cout << endl << "\n*********************************************";
-            cout << endl << endl;
-            cout << "Name: ";
-            getline(cin, name);
-            displayUserPrompt("\nNow please type the staff person's age: ");
-            getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
-            displayUserPrompt("\nNow please type the staff person's duty: ");
-            getline(cin, duty);
-            displayUserPrompt("\nNow please type the staff person's workload: ");
-            getExpectedIntInput(&workload, { -1, 3, 32 }, "Accepted workload ranges from 3-32 Hours/Week: ");
-
-            Staff* s = new Staff(name, age, duty, workload);
-            staffInstancesVector.push_back(s);
+        case 2:
+            degree = "Master";
+            break;
+        case 3:
+            degree = "PhD";
+            break;
+        default:
+            degree = "Bachelor";
+            break;
         }
+        if (hoursWorked == 32)
+        {
+            Teacher* t = new FullTime (name, age, speciality, degree);
+            teacherInstancesVector.push_back(t);
+        }
+        else
+        {
+            Teacher* t = new PartTime(name, age, speciality, degree, hoursWorked);
+            teacherInstancesVector.push_back(t);
+        }
+    }
+    else if (categoryChoice == 2)
+    {
+        system("CLS");
+        drawAppTitle();
+        cout << "\n\n--Create Person-STAFF--\n" << endl;
+        // createPerson options
+        displayUserPrompt("Please write the full name of the staff person.");
+        cout << endl << "\n*********************************************";
+        cout << endl << endl;
+        cout << "Name: ";
+        getline(cin, name);
+        displayUserPrompt("\nNow please type the staff person's age: ");
+        getExpectedIntInput(&age, { -1, 16, 125 }, "Accepted age range is from 16-125 years old: ");
+        displayUserPrompt("\nNow please type the staff person's duty: ");
+        getline(cin, duty);
+        displayUserPrompt("\nNow please type the staff person's workload: ");
+        getExpectedIntInput(&workload, { -1, 3, 32 }, "Accepted workload ranges from 3-32 Hours/Week: ");
+
+        Staff* s = new Staff(name, age, duty, workload);
+        staffInstancesVector.push_back(s);
+    }
+    saveData();
     cout << "Person created successfully.\n";
     system("pause");
     menuState = MAIN_MENU;
@@ -1083,6 +1091,7 @@ void deletePerson()
                 acceptedInputsPersonID.clear();
             }
         }
+        saveData(); // Saves data after deleting person
     }
 }
 
@@ -1234,6 +1243,7 @@ void modifyPerson()
             menuState = MAIN_MENU;
             break;
         }
+        saveData(); // Saves data after modifying person
     }
 
 }
@@ -1343,12 +1353,10 @@ void settingsMenu()
 void closeApp()
 {
     system("CLS");
-    // Write data file on modifications...
-    //,.
+    saveData(); // Saves data upon closing application
 
     cout << "Thank you for using HR Management\n\n";
 
-    system("pause");
     run = false;
 }
 
