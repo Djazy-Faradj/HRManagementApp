@@ -72,3 +72,8 @@ In your model, you will have department objects (representing departments). A de
 4. Part-time or full-time is a field in the Teacher's class
 
 5. A Dean is a special type of teacher.
+
+## Screenshots (Sample college)
+![1](https://github.com/user-attachments/assets/968dfe83-6065-4a34-9b0b-524915fce5a1 "Main menu")
+![2](https://github.com/user-attachments/assets/0777444c-f162-4a38-ae40-0b82ba2cfb90 "Payroll page of a sample college")
+![3](https://github.com/user-attachments/assets/2a0f7eef-7f96-442b-9f66-7c914641472a "Sample college department view page")
